@@ -123,3 +123,9 @@
     @apply bg-background text-foreground;
   }
 }
+@layer base {
+  body {
+    @apply min-h-screen bg-cover bg-center bg-no-repeat;
+    background-image: url("/bg_img.png");
+  }
+}
