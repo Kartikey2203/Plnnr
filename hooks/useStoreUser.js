@@ -11,20 +11,21 @@ export default function useStoreUser() {
   const storeUser = useMutation(api.users.storeUser);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (!isSignedIn || !user) return;
+useEffect(() => {
+  if (!isSignedIn || !user || !userId) return;
 
-    setIsLoading(true);
+  setIsLoading(true);
 
-    storeUser({
-      tokenIdentifier: userId,
-      name: user.fullName ?? "Anonymous",
-      email: user.primaryEmailAddress?.emailAddress ?? "",
-      imageUrl: user.imageUrl,
-    }).finally(() => {
-      setIsLoading(false);
-    });
-  }, [isSignedIn, user]);
+  storeUser({
+    clerkId: userId,
+    name: user.fullName ?? "Anonymous",
+    email: user.primaryEmailAddress?.emailAddress ?? "",
+    image: user.imageUrl,
+  }).finally(() => {
+    setIsLoading(false);
+  });
+}, [isSignedIn, user, userId]); //  FIXED
+
 
   return { isLoading };
 }
