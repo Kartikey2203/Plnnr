@@ -1,27 +1,36 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 
-export const createUser = mutation({
-  args: {
-    email: v.string(),
-    imageUrl: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    console.log("📦 Convex mutation hit:", args.email);
+// This mutation will be called when a user signs in
+export const store = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    
+    if (!identity) {
+      throw new Error("Called storeUser without authentication present");
+    }
 
-    const existing = await ctx.db
+    // Check if user already exists
+    const user = await ctx.db
       .query("users")
-      .filter(q => q.eq(q.field("email"), args.email))
-      .first();
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
 
-    if (existing) return;
+    if (user !== null) {
+      // User already exists, return the existing user
+      return user._id;
+    }
 
-    await ctx.db.insert("users", {
-      email: args.email,
-      imageUrl: args.imageUrl,
-      hasCompletedOnboard: false,
-      freeEventsCreated: 0,
+    // Create new user
+    const userId = await ctx.db.insert("users", {
+      clerkId: identity.subject,
+      email: identity.email ?? "",
+      name: identity.name ?? "",
+      image: identity.pictureUrl ?? "",
       createdAt: Date.now(),
     });
+
+    return userId;
   },
 });
