@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Ticket, Building } from "lucide-react";
 
 const Header = () => {
-  const { isLoading } = useStoreUser();
+  // const { isLoading } = useStoreUser();
   const { isSignedIn } = useAuth();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
@@ -81,11 +81,11 @@ const Header = () => {
       </div>
 
       {/* Loader */}
-      {isLoading && (
+      {/* {isLoading && (
         <div className="absolute bottom-0 left-0 w-full">
           <BarLoader width="100%" height={3} color="#a855f7" />
         </div>
-      )}
+      )} */}
 
       {/* Glow line */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-rose-500/50 to-transparent" />

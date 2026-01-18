@@ -1,31 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 export default function useStoreUser() {
-  const { isSignedIn, userId } = useAuth();
-  const { user } = useUser();
-  const storeUser = useMutation(api.users.storeUser);
-  const [isLoading, setIsLoading] = useState(false);
+  const { user, isLoaded } = useUser();
+  const createUser = useMutation(api.users.createUser);
 
-useEffect(() => {
-  if (!isSignedIn || !user || !userId) return;
+  useEffect(() => {
+    if (!isLoaded || !user) return;
 
-  setIsLoading(true);
+    console.log("🔥 creating user in convex", user.primaryEmailAddress.emailAddress);
 
-  storeUser({
-    clerkId: userId,
-    name: user.fullName ?? "Anonymous",
-    email: user.primaryEmailAddress?.emailAddress ?? "",
-    image: user.imageUrl,
-  }).finally(() => {
-    setIsLoading(false);
-  });
-}, [isSignedIn, user, userId]); //  FIXED
-
-
-  return { isLoading };
+    createUser({
+      email: user.primaryEmailAddress.emailAddress,
+      imageUrl: user.imageUrl,
+    });
+  }, [isLoaded, user, createUser]);
 }

@@ -1,32 +1,27 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 
-export const storeUser = mutation({
+export const createUser = mutation({
   args: {
-    tokenIdentifier: v.string(),
-    name: v.string(),
     email: v.string(),
     imageUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const existingUser = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", args.tokenIdentifier)
-      )
-      .unique();
+    console.log("📦 Convex mutation hit:", args.email);
 
-    if (existingUser) return;
+    const existing = await ctx.db
+      .query("users")
+      .filter(q => q.eq(q.field("email"), args.email))
+      .first();
+
+    if (existing) return;
 
     await ctx.db.insert("users", {
-      tokenIdentifier: args.tokenIdentifier,
-      name: args.name,
       email: args.email,
       imageUrl: args.imageUrl,
-      hasCompletedOnboarding: false,
+      hasCompletedOnboard: false,
       freeEventsCreated: 0,
       createdAt: Date.now(),
-      updatedAt: Date.now(),
     });
   },
 });
