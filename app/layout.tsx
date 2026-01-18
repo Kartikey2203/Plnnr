@@ -1,6 +1,6 @@
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import { ConvexClientProvider } from "./convexclientProvider";
+import ConvexClientProvider from "./convexclientProvider";
 import Header from "@/components/ui/Header";
 import { dark } from "@clerk/themes";
 import { ClerkProvider } from "@clerk/nextjs";
