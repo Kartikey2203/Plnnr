@@ -16,12 +16,13 @@ useEffect(() => {
 
   setIsLoading(true);
 
-  storeUser({
-    clerkId: userId,
-    name: user.fullName ?? "Anonymous",
-    email: user.primaryEmailAddress?.emailAddress ?? "",
-    image: user.imageUrl,
-  }).finally(() => {
+storeUser({
+  clerkId: userId,
+  tokenIdentifier: userId,          // ✅ ADD THIS
+  name: user.fullName ?? "Anonymous",
+  email: user.primaryEmailAddress?.emailAddress ?? "",
+  imageUrl: user.imageUrl,          // ✅ FIX KEY
+}).finally(() => {
     setIsLoading(false);
   });
 }, [isSignedIn, user, userId]); //  FIXED

@@ -29,55 +29,26 @@ export default function LandingPage() {
             spott*
           </span>
 
-          <h1
-            className="
-              text-4xl sm:text-6xl md:text-7xl
-              font-black leading-tight
-              mb-6 text-white
-            "
-          >
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black leading-tight mb-6 text-white">
             Discover <br />
             create amazing <br />
             <span className="text-purple-500">events.</span>
           </h1>
 
-          <p
-            className="
-              text-base sm:text-lg
-              text-gray-300
-              mb-8
-              leading-relaxed
-            "
-          >
+          <p className="text-base sm:text-lg text-gray-300 mb-8 leading-relaxed">
             Whether you're hosting or attending, Spott helps you discover,
             create, and manage events effortlessly.
           </p>
 
-          {/* Buttons */}
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-start">
-            <Button
-              asChild
-              className="
-                w-full sm:w-auto
-                rounded-full
-                px-10 py-5
-                bg-purple-600 hover:bg-purple-700
-              "
-            >
+            <Button asChild className="rounded-full px-10 py-5 bg-purple-600 hover:bg-purple-700">
               <Link href="/explore">Get Started</Link>
             </Button>
 
             <Button
               asChild
               variant="outline"
-              className="
-                w-full sm:w-auto
-                rounded-full
-                px-10 py-5
-                border-white/20
-                bg-white/5
-                text-white
-              "
+              className="rounded-full px-10 py-5 border-white/20 bg-white/5 text-white"
             >
               <Link href="/create-event">Create Event</Link>
             </Button>

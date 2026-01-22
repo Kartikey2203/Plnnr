@@ -3,6 +3,7 @@
 import { SignInButton, UserButton, useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { BarLoader } from "react-spinners";
 import useStoreUser from "@/hooks/useStoreUser";
 import { Button } from "@/components/ui/button";
@@ -13,12 +14,22 @@ const Header = () => {
   const { isSignedIn } = useAuth();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
+  const pathname = usePathname();
+  const isLandingPage = pathname === "/";
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50">
-      {/* Glass navbar */}
-      <div className="border-b border-white/5 bg-gradient-to-b from-black/40 via-black/30 to-transparent backdrop-blur-xl">
+      {/* Glass / Solid navbar depending on route */}
+      <div
+        className={`border-b border-white/5 backdrop-blur-xl transition-colors duration-300
+          ${
+            isLandingPage
+              ? "bg-gradient-to-b from-black/40 via-black/30 to-transparent"
+              : "bg-black/80"
+          }
+        `}
+      >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <img
@@ -47,7 +58,7 @@ const Header = () => {
             {/* Create Event */}
             <Button size="sm" asChild className="flex gap-2">
               <Link href="/create-event">
-                <Plus className="w-4 h-4" />
+                <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">Create Event</span>
               </Link>
             </Button>
