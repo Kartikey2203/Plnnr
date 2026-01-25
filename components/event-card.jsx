@@ -147,7 +147,7 @@ export default function EventCard({
       className={`overflow-hidden group border border-white/10 bg-white/5 hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] transition-all duration-300 ${className}`}
       onClick={onClick}
     >
-      <div className="relative h-80 overflow-hidden">
+      <div className="relative h-48 overflow-hidden">
         {event.coverImage ? (
           <Image
             src={event.coverImage}
@@ -165,31 +165,31 @@ export default function EventCard({
             {getCategoryIcon(event.category)}
           </div>
         )}
-        <div className="absolute top-3 right-3">
-          <Badge className="bg-black/60 backdrop-blur-md border border-white/10 text-white hover:bg-black/70">
+        <div className="absolute top-2 right-2">
+          <Badge className="bg-black/60 backdrop-blur-md border border-white/10 text-white hover:bg-black/70 text-xs px-2 py-0.5 h-5">
             {event.ticketType === "free" ? "Free" : "Paid"}
           </Badge>
         </div>
       </div>
 
       {/* Default Grid Content */}
-      <CardContent className="p-5 space-y-4">
+      <CardContent className="p-4 space-y-3">
         <div>
-          <Badge variant="secondary" className="mb-3 bg-purple-500/10 text-purple-400 border-purple-500/20 hover:bg-purple-500/20">
-            {getCategoryIcon(event.category)} {getCategoryLabel(event.category)}
+          <Badge variant="secondary" className="mb-2 bg-purple-500/10 text-purple-400 border-purple-500/20 hover:bg-purple-500/20 text-[10px] px-2 py-0 h-5">
+            {getCategoryIcon(event.category)} <span className="ml-1">{getCategoryLabel(event.category)}</span>
           </Badge>
-          <h3 className="font-semibold text-xl line-clamp-2 group-hover:text-purple-400 transition-colors text-white">
+          <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-purple-400 transition-colors text-white">
             {event.title}
           </h3>
         </div>
 
-        <div className="space-y-2 text-sm text-gray-400">
+        <div className="space-y-1.5 text-xs text-gray-400">
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-gray-500" />
-            <span>{format(event.startDate, "PPP")}</span>
+            <Calendar className="w-3.5 h-3.5 text-gray-500" />
+            <span>{format(event.startDate, "MMM d, yyyy")}</span>
           </div>
           <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-gray-500" />
+            <MapPin className="w-3.5 h-3.5 text-gray-500" />
             <span className="line-clamp-1">
               {event.locationType === "online"
                 ? "Online Event"
@@ -197,7 +197,7 @@ export default function EventCard({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-gray-500" />
+            <Users className="w-3.5 h-3.5 text-gray-500" />
             <span>
               {event.registrationCount} / {event.capacity} registered
             </span>

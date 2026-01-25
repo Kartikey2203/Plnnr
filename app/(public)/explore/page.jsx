@@ -46,13 +46,13 @@ export default function ExplorePage() {
 
   const { data: featuredEvents, isLoading: loadingFeatured } =
     useConvexQuery(api.explore.getFeaturedEvents, {
-      limit: 3,
+      limit: 10,
     });
 
   const { data: localEvents, isLoading: loadingLocal } =
     useConvexQuery(api.explore.getEventsByLocation, {
-      city: currentUser?.location?.city || "Gurgaon",
-      state: currentUser?.location?.state || "Haryana",
+      city: currentUser?.location?.city || "Bangalore",
+      state: currentUser?.location?.state || "Karnataka",
       limit: 4,
     });
 
@@ -79,8 +79,8 @@ export default function ExplorePage() {
   };
 
   const handleViewLocalEvents = () => {
-    const city = currentUser?.location?.city || "Gurgaon";
-    const state = currentUser?.location?.state || "Haryana";
+    const city = currentUser?.location?.city || "Bangalore";
+    const state = currentUser?.location?.state || "Karnataka";
     router.push(`/explore/${createLocationSlug(city, state)}`);
   };
 
@@ -211,7 +211,7 @@ export default function ExplorePage() {
             </h2>
             <p className="text-muted-foreground text-lg">
               Happening in{" "}
-              <span className="text-white font-medium">{currentUser?.location?.city || "Gurgaon"}</span>
+              <span className="text-white font-medium">{currentUser?.location?.city || "Bangalore"}</span>
             </p>
           </div>
 
@@ -241,7 +241,7 @@ export default function ExplorePage() {
         ) : (
           <div className="text-center py-12 bg-white/5 rounded-2xl border border-white/10 border-dashed">
             <p className="text-gray-400">
-              No upcoming events found in {currentUser?.location?.city || "Gurgaon"}.
+              No upcoming events found in {currentUser?.location?.city || "Bangalore"}.
             </p>
             <Button variant="link" className="text-purple-400 mt-2" onClick={() => router.push("/create-event")}>
               Host an event here

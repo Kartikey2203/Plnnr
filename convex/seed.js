@@ -28,7 +28,7 @@ Light refreshments will be provided. Limited seats available.`,
     capacity: 50,
     ticketType: "free",
     coverImage:
-      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1200&q=80",
+      "/images/react_workshop.png",
     themeColor: "#4c1d95",
   },
   {
@@ -54,7 +54,7 @@ Pizza and drinks provided!`,
     capacity: 100,
     ticketType: "free",
     coverImage:
-      "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&q=80",
+      "/images/ai_meetup.png",
     themeColor: "#1e3a8a",
   },
   {
@@ -80,7 +80,7 @@ Food and beverages available for purchase at the venue.`,
     ticketType: "paid",
     ticketPrice: 499,
     coverImage:
-      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200&q=80",
+      "/images/indie_music_night.png",
     themeColor: "#831843",
   },
   {
@@ -107,7 +107,7 @@ Continental breakfast included in registration.`,
     ticketType: "paid",
     ticketPrice: 299,
     coverImage:
-      "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&q=80",
+      "/images/startup_breakfast.png",
     themeColor: "#065f46",
   },
   {
@@ -134,7 +134,7 @@ Chai stops included along the way!`,
     ticketType: "paid",
     ticketPrice: 799,
     coverImage:
-      "https://images.unsplash.com/photo-1554080353-a576cf803bda?w=1200&q=80",
+      "/images/street_photography_walk.png",
     themeColor: "#92400e",
   },
   {
@@ -186,8 +186,7 @@ Referee provided. Water and energy drinks available. Medical support on standby.
     capacity: 56,
     ticketType: "paid",
     ticketPrice: 350,
-    coverImage:
-      "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&q=80",
+    coverImage: "/images/corporate_cricket.png",
     themeColor: "#065f46",
   },
   {
@@ -240,8 +239,7 @@ Yoga mats provided. Please wear comfortable clothing.`,
     capacity: 35,
     ticketType: "paid",
     ticketPrice: 450,
-    coverImage:
-      "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1200&q=80",
+    coverImage: "/images/morning_yoga_retreat.png",
     themeColor: "#4c1d95",
   },
   {
@@ -267,8 +265,7 @@ Energy drinks and snacks available. Exciting commentary and crowd interaction!`,
     capacity: 80,
     ticketType: "paid",
     ticketPrice: 200,
-    coverImage:
-      "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&q=80",
+    coverImage: "/images/valorant_tournament.png",
     themeColor: "#7f1d1d",
   },
   {
@@ -355,8 +352,7 @@ Refreshments provided. A great way to give back to nature while meeting like-min
     address: "Calangute Beach, North Goa",
     capacity: 100,
     ticketType: "free",
-    coverImage:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80",
+    coverImage: "/images/community_cleanup.png",
     themeColor: "#1e3a8a",
   },
   {
@@ -452,74 +448,8 @@ Lunch and refreshments included. Bring your laptop!`,
       "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1200&q=80",
     themeColor: "#4c1d95",
   },
-  {
-    title: "Startup Founder's Breakfast - Funding & Growth Stories",
-    description: `Connect with fellow founders and learn from successful entrepreneurs over breakfast!
 
-Featured speakers:
-- Series B founder sharing fundraising journey
-- Angel investor revealing what they look for
-- Growth hacker with proven scaling strategies
-- Failed startup founder sharing lessons learned
 
-Agenda:
-- 8:00 AM - Networking breakfast
-- 9:00 AM - Panel discussion
-- 10:00 AM - Q&A session
-- 10:30 AM - One-on-one speed networking
-
-This intimate gathering is perfect for early-stage founders, aspiring entrepreneurs, and anyone interested in the startup ecosystem.
-
-Continental breakfast and unlimited coffee included!`,
-    category: "business",
-    tags: ["business", "startup", "networking", "entrepreneurship"],
-    city: "Gurgaon",
-    state: "Haryana",
-    venue: "https://maps.google.com/?q=WeWork+Two+Horizon+Center+Gurgaon",
-    address: "WeWork Two Horizon Center, Golf Course Road, Gurgaon",
-    capacity: 35,
-    ticketType: "paid",
-    ticketPrice: 399,
-    coverImage:
-      "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=1200&q=80",
-    themeColor: "#065f46",
-  },
-  {
-    title: "Weekend Photography Masterclass - Portrait & Street",
-    description: `Elevate your photography skills with professional techniques!
-
-Day 1 - Portrait Photography:
-- Lighting setups (natural & artificial)
-- Posing and directing subjects
-- Camera settings for portraits
-- Live model shoot session
-- Post-processing in Lightroom
-
-Day 2 - Street Photography:
-- Finding compelling stories
-- Composition techniques
-- Candid vs posed shots
-- Photo walk in Cyber Hub
-- Ethics in street photography
-
-Equipment: DSLR/Mirrorless camera required (no phone cameras for this workshop). Tripod optional.
-
-All skill levels welcome. You'll leave with a portfolio of stunning images!
-
-Snacks and beverages provided both days.`,
-    category: "art",
-    tags: ["art", "photography", "workshop", "creative"],
-    city: "Gurgaon",
-    state: "Haryana",
-    venue: "https://maps.google.com/?q=Visual+Arts+Gallery+Gurgaon",
-    address: "Visual Arts Gallery, Sector 44, Gurgaon",
-    capacity: 20,
-    ticketType: "paid",
-    ticketPrice: 2499,
-    coverImage:
-      "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=1200&q=80",
-    themeColor: "#92400e",
-  },
   {
     title: "Corporate Cricket Tournament - Season 3",
     description: `The biggest corporate cricket showdown in Gurgaon is back!
@@ -612,22 +542,377 @@ Healthy snacks and herbal teas included.`,
       "https://images.unsplash.com/photo-1513104890138-7c749659a591?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NjkyNzJ8MHwxfHNlYXJjaHwxfHxwaXp6YXxlbnwwfHx8fDE3NjI5NTA5NTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
     themeColor: "#831843",
   },
+
   {
-    title: "React & Next.js: Building the Future of Web Applications",
-    description: `Explore the latest advancements in React and Next.js, and discover how these technologies are shaping modern web development. This event provides insights into server-side rendering, performance optimization, and the future roadmap for building scalable and efficient web applications. Attendees will gain practical knowledge and explore best practices for leveraging these powerful tools.`,
+    title: "WebAssembly: The Future of Web Performance",
+    description: `Dive into the world of WebAssembly (Wasm) and learn how it's revolutionizing web performance!
+
+Agenda:
+- Introduction to Wasm
+- Rust + Wasm workflow
+- Porting legacy C++ code
+- Browser support and polyfills
+- Live coding session
+
+Perfect for performance-minded developers.`,
     category: "tech",
-    tags: ["tech"],
+    tags: ["tech", "webassembly", "rust", "performance"],
+    city: "Bangalore",
+    state: "Karnataka",
+    venue: "https://maps.google.com/?q=Microsoft+Reactor+Bangalore",
+    address: "Microsoft Reactor, Lavelle Road, Bangalore",
+    capacity: 60,
+    ticketType: "free",
+    coverImage: "https://images.unsplash.com/photo-1550439062-609e1531270e?w=1200&q=80",
+    themeColor: "#2563eb",
+  },
+  {
+    title: "Jazz Night Under the Stars",
+    description: `A magical evening of smooth jazz and good vibes.
+
+Featuring:
+- The Delhi Jazz Quartet
+- Guest Saxophonist from New Orleans
+- Wine and Cheese tasting
+- Open jam session
+
+Dress code: Smart Casual.
+Come relax and unwind with the finest tunes in the city.`,
+    category: "music",
+    tags: ["music", "jazz", "live", "nightlife"],
+    city: "Delhi",
+    state: "Delhi",
+    venue: "https://maps.google.com/?q=The+Piano+Man+Jazz+Club",
+    address: "The Piano Man Jazz Club, Safdarjung Enclave, Delhi",
+    capacity: 80,
+    ticketType: "paid",
+    ticketPrice: 1500,
+    coverImage: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=1200&q=80",
+    themeColor: "#7c2d12",
+  },
+  {
+    title: "Pilates for Beginners - Core Strength",
+    description: `Strengthen your core and improve flexibility with our introductory Pilates workshop.
+
+What we'll cover:
+- Basic mat exercises
+- Breathing techniques
+- Posture correction
+- Myths about Pilates
+
+Mats provided. Wear comfortable gym wear. No shoes required.`,
+    category: "health",
+    tags: ["health", "fitness", "pilates", "wellness"],
+    city: "Mumbai",
+    state: "Maharashtra",
+    venue: "https://maps.google.com/?q=The+Yoga+House+Bandra",
+    address: "The Yoga House, Bandra West, Mumbai",
+    capacity: 15,
+    ticketType: "paid",
+    ticketPrice: 800,
+    coverImage: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=1200&q=80",
+    themeColor: "#be185d",
+  },
+  {
+    title: "Hyderabad Street Food Walk",
+    description: `Discover the culinary gems of the City of Pearls!
+
+We will taste:
+- Authentic Hyderabadi Biryani
+- Double ka Meetha
+- Irani Chai & Osmania Biscuits
+- Halleem (seasonal)
+
+Walking distance: 2km. Come with an empty stomach!`,
+    category: "food",
+    tags: ["food", "street-food", "culture", "walking-tour"],
+    city: "Hyderabad",
+    state: "Telangana",
+    venue: "https://maps.google.com/?q=Charminar",
+    address: "Charminar Main Gate, Hyderabad",
+    capacity: 25,
+    ticketType: "paid",
+    ticketPrice: 600,
+    coverImage: "/images/hyderabad_street_food.png",
+    themeColor: "#ea580c",
+  },
+  {
+    title: "Pottery & Clay Modeling Workshop",
+    description: `Get your hands dirty and create something beautiful!
+
+Session plan:
+- Introduction to clay types
+- Hand-building techniques (coil, pinch, slab)
+- Wheel throwing basics
+- Glazing demonstration
+
+Take home your own handmade bowl or mug (after firing). All materials included.`,
+    category: "art",
+    tags: ["art", "craft", "pottery", "workshop"],
+    city: "Pune",
+    state: "Maharashtra",
+    venue: "https://maps.google.com/?q=Clay+Station+Pune",
+    address: "Clay Station, Koregaon Park, Pune",
+    capacity: 12,
+    ticketType: "paid",
+    ticketPrice: 1800,
+    coverImage: "/images/pottery_workshop.png",
+    themeColor: "#a16207",
+  },
+  {
+    title: "Crypto & Web3 Summit 2024",
+    description: `The largest gathering of crypto enthusiasts and Web3 builders in India.
+
+Keynotes on:
+- DeFi trends
+- NFT utility beyond art
+- DAO governance
+- Regulatory landscape in India
+
+Network with founders, VCs, and developers building the decentralized future.`,
+    category: "business",
+    tags: ["business", "crypto", "web3", "blockchain"],
+    city: "Bangalore",
+    state: "Karnataka",
+    venue: "https://maps.google.com/?q=Sheraton+Grand+Bangalore",
+    address: "Sheraton Grand, Whitefield, Bangalore",
+    capacity: 200,
+    ticketType: "paid",
+    ticketPrice: 3500,
+    coverImage: "/images/crypto_web3.png",
+    themeColor: "#4f46e5",
+  },
+  {
+    title: "Marathon Training Bootcamp",
+    description: `Preparing for the Chennai Marathon? Train with the pros!
+
+Program:
+- Stamina building drills
+- Proper running form analysis
+- Nutrition for runners
+- Injury prevention strategies
+
+Join a community of motivated runners. Early morning sessions.`,
+    category: "sports",
+    tags: ["sports", "running", "marathon", "fitness"],
+    city: "Chennai",
+    state: "Tamil Nadu",
+    venue: "https://maps.google.com/?q=Marina+Beach+Chennai",
+    address: "Marina Beach Lighthouse, Chennai",
+    capacity: 50,
+    ticketType: "free",
+    coverImage: "https://images.unsplash.com/photo-1552674605-46d536d2e681?w=1200&q=80",
+    themeColor: "#059669",
+  },
+  {
+    title: "Minecraft Build Battle - Creative Mode",
+    description: `Show off your creativity in our timed Minecraft building competition!
+
+Theme: "Future Cities"
+Time limit: 2 hours
+
+Judges will score based on:
+- Creativity
+- Detail
+- adherence to theme
+- Scale
+
+BYOD (Bring Your Own Device). Server IP provided on registration.`,
+    category: "gaming",
+    tags: ["gaming", "minecraft", "esports", "competition"],
+    city: "Noida",
+    state: "Uttar Pradesh",
+    venue: "https://maps.google.com/?q=Gaming+Cafe+Noida",
+    address: "The Gaming Cafe, Sector 18, Noida",
+    capacity: 30,
+    ticketType: "paid",
+    ticketPrice: 300,
+    coverImage: "/images/minecraft_build_battle.png",
+    themeColor: "#16a34a",
+  },
+  {
+    title: "Digital Nomads & Freelancers Meetup",
+    description: `Connect with the remote work community in Goa!
+
+Discuss:
+- Finding high-paying clients
+- Managing time zones
+- Tax hacks for freelancers
+- Best co-working spots
+
+Sunset drinks and networking afterwards.`,
+    category: "networking",
+    tags: ["networking", "freelance", "digital-nomad", "remote-work"],
+    city: "Goa",
+    state: "Goa",
+    venue: "https://maps.google.com/?q=Nomad+Gao",
+    address: "NomadGao Co-living, Anjuna, Goa",
+    capacity: 40,
+    ticketType: "free",
+    coverImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80",
+    themeColor: "#0891b2",
+  },
+  {
+    title: "Desert Stargazing & Camping",
+    description: `Escape the city lights and witness the Milky Way!
+
+Experience:
+- Camel safari to camp
+- Telescope viewing session with astronomer
+- Bonfire and folk music
+- Rajasthani dinner
+- Tent stay
+
+A truly unforgettable night under the desert sky.`,
+    category: "outdoor",
+    tags: ["outdoor", "camping", "stargazing", "adventure"],
+    city: "Jaipur",
+    state: "Rajasthan",
+    venue: "https://maps.google.com/?q=Amer+Fort",
+    address: "Meeting point: Amer Fort Parking, Jaipur",
+    capacity: 25,
+    ticketType: "paid",
+    ticketPrice: 3000,
+    coverImage: "https://images.unsplash.com/photo-1534274988754-c6a60d2968dc?w=1200&q=80",
+    themeColor: "#312e81",
+  },
+  {
+    title: "Data Science 101 - Python & Pandas",
+    description: `An introductory workshop on Data Science using Python.
+
+Syllabus:
+- Python basics refresh
+- Pandas DataFrames
+- Data cleaning and manipulation
+- Basic visualization with Matplotlib
+- Intro to Scikit-learn
+
+Prerequisites: Basic programming knowledge.`,
+    category: "education",
+    tags: ["education", "data-science", "python", "tech"],
+    city: "Kolkata",
+    state: "West Bengal",
+    venue: "https://maps.google.com/?q=Coworking+Space+Kolkata",
+    address: "Smartworks, Victoria Park, Kolkata",
+    capacity: 35,
+    ticketType: "paid",
+    ticketPrice: 999,
+    coverImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80",
+    themeColor: "#db2777",
+  },
+  {
+    title: "Animal Shelter Volunteer Day",
+    description: `Spend a day caring for rescued animals!
+
+Activities:
+- Walking dogs
+- Grooming cats
+- Cleaning enclosures
+- Feeding time
+- Playtime!
+
+A heartwarming experience for all animal lovers. Donations in kind (food, blankets) are welcome.`,
+    category: "community",
+    tags: ["community", "volunteer", "animals", "charity"],
     city: "Gurgaon",
     state: "Haryana",
-    venue: "https://maps.app.goo.gl/tgdtbwXkAwpHkHAw6",
-    address:
-      "Google Office - Tower A, IN-GUR-SIGA, Sector 15 Part 2, Village Silokhera, Gurgaon, Haryana 122001",
-    capacity: 75,
+    venue: "https://maps.google.com/?q=Friendicoes+Gurgaon",
+    address: "Friendicoes SPRuth, Sector 55, Gurgaon",
+    capacity: 20,
+    ticketType: "free",
+    coverImage: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1200&q=80",
+    themeColor: "#ca8a04",
+  },
+  {
+    title: "Salsa Social Night",
+    description: `Put on your dancing shoes for a night of Latin rhythms!
+
+Schedule:
+- 7:00 PM: Beginner Salsa Workshop
+- 8:00 PM: Bachata Basics
+- 9:00 PM onwards: Open Social Dancing
+
+No partner required. Smooth wooden floor, great AC, and amazing DJs.`,
+    category: "music",
+    tags: ["music", "salsa", "dance", "social"],
+    city: "Mumbai",
+    state: "Maharashtra",
+    venue: "https://maps.google.com/?q=Raasta+Bombay",
+    address: "Raasta Bombay, Khar, Mumbai",
+    capacity: 100,
     ticketType: "paid",
-    ticketPrice: 250,
-    coverImage:
-      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NjkyNzJ8MHwxfHNlYXJjaHwxfHxyZWFjdCUyMGpzfGVufDB8fHx8MTc2Mjk0NjQ4M3ww&ixlib=rb-4.1.0&q=80&w=1080",
-    themeColor: "#1e3a8a",
+    ticketPrice: 500,
+    coverImage: "/images/salsa_social_night.png",
+    themeColor: "#b91c1c",
+  },
+  {
+    title: "Organic Gardening Workshop",
+    description: `Grow your own vegetables at home!
+
+Learn about:
+- Soil preparation and composting
+- Container gardening
+- Pest management (organic way)
+- Seasonal planting calendar
+
+Starter kit included (seeds, pot, and soil mix).`,
+    category: "outdoor",
+    tags: ["outdoor", "gardening", "sustainability", "nature"],
+    city: "Bangalore",
+    state: "Karnataka",
+    venue: "https://maps.google.com/?q=Lalbagh+Botanical+Garden",
+    address: "Lalbagh Botanical Garden, Bangalore",
+    capacity: 30,
+    ticketType: "paid",
+    ticketPrice: 1200,
+    coverImage: "/images/organic_gardening.png",
+    themeColor: "#15803d",
+  },
+  {
+    title: "Advanced Chess Strategy Symposium",
+    description: `Master the game of kings with Grandmaster insights.
+
+Topics:
+- Opening repertoire preparation
+- Middlegame positional play
+- Endgame complexities
+- Psychological aspects of competition
+
+Suitable for rated players (1500+ Elo). Bring your chess set.`,
+    category: "education",
+    tags: ["education", "chess", "strategy", "competition"],
+    city: "Chennai",
+    state: "Tamil Nadu",
+    venue: "https://maps.google.com/?q=Chess+Academy+Chennai",
+    address: "Chennai Chess Club, Mylapore, Chennai",
+    capacity: 40,
+    ticketType: "paid",
+    ticketPrice: 2000,
+    coverImage: "https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=1200&q=80",
+    themeColor: "#334155",
+  },
+  {
+    title: "Stand-up Comedy Open Mic",
+    description: `Laugh out loud with the city's funniest upcoming comics!
+
+Format:
+- 10 comics
+- 5 minutes each
+- 1 Host
+- Infinite laughter
+
+Want to perform? Sign up at the venue 30 mins before the show.`,
+    category: "art",
+    tags: ["art", "comedy", "standup", "entertainment"],
+    city: "Delhi",
+    state: "Delhi",
+    venue: "https://maps.google.com/?q=Comedy+Club+Delhi",
+    address: "Playground Comedy Studio, Hauz Khas Village, Delhi",
+    capacity: 60,
+    ticketType: "paid",
+    ticketPrice: 299,
+    coverImage: "https://images.unsplash.com/photo-1585699324551-f6c309eedeca?w=1200&q=80",
+    themeColor: "#c2410c",
   },
 ];
 
@@ -657,6 +942,9 @@ function generateSlug(title) {
 =========================== */
 export const run = action({
   handler: async (ctx) => {
+    // Clear existing events first to prevent duplicates
+    await ctx.runMutation(api.seedMutations.clearAllEvents);
+
     const organizer = await ctx.runMutation(
       api.seedMutations.getOrCreateOrganizer
     );

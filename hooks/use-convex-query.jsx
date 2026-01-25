@@ -5,11 +5,17 @@ import { toast } from "sonner";
 export const useConvexQuery = (query, ...args) => {
   const result = useQuery(query, ...args);
   const [data, setData] = useState(undefined);
-  const [isLoading, setIsLoading] = useState(true);
+  const isSkipped = args.length > 0 && args[0] === "skip";
+  const [isLoading, setIsLoading] = useState(!isSkipped);
   const [error, setError] = useState(null);
 
   // Use effect to handle the state changes based on the query result
   useEffect(() => {
+    if (isSkipped) {
+      setIsLoading(false);
+      return;
+    }
+
     if (result === undefined) {
       setIsLoading(true);
     } else {
@@ -23,7 +29,7 @@ export const useConvexQuery = (query, ...args) => {
         setIsLoading(false);
       }
     }
-  }, [result]);
+  }, [result, isSkipped]);
 
   return {
     data,

@@ -57,3 +57,40 @@ export const getCurrentUser = query({
       .unique();
   },
 });
+
+export const completeOnboarding = mutation({
+  args: {
+    location: v.object({
+      city: v.string(),
+      state: v.optional(v.string()),
+      country: v.string(),
+    }),
+    interests: v.array(v.string()), // Min 3 categories
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier)
+      )
+      .unique();
+
+    if (!user) {
+        throw new Error("User not found");
+    }
+
+    await ctx.db.patch(user._id, {
+      location: args.location,
+      interests: args.interests,
+      hasCompletedOnboarding: true,
+      updatedAt: Date.now(),
+    });
+
+    return user._id; // Return ID or updated user
+  },
+});
