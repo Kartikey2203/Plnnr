@@ -31,6 +31,7 @@ import {
 
 import { CATEGORIES } from "@/lib/data";
 import EventCard from "@/components/event-card";
+import OnboardingModal from "@/components/onboarding-modal";
 
 export default function ExplorePage() {
   const router = useRouter();
@@ -89,6 +90,13 @@ export default function ExplorePage() {
     count: categoryCounts?.[cat.id] || 0,
   }));
 
+  /* ================= EFFECTS ================= */
+  // Show onboarding modal if user hasn't completed it
+  const showOnboarding = 
+    !isLoading && 
+    currentUser && 
+    !currentUser.hasCompletedOnboarding;
+
   /* ================= LOADING ================= */
 
   if (isLoading) {
@@ -102,6 +110,12 @@ export default function ExplorePage() {
   return (
     <div className="min-h-screen bg-black text-white selection:bg-purple-500/30">
       
+      {/* <OnboardingModal 
+        isOpen={showOnboarding}
+        onClose={() => {}} // Prevent closing without completing
+        onComplete={() => window.location.reload()} // Reload to refresh state
+      /> */}
+
       {/* ================= HERO SECTION (Full Width) ================= */}
       {featuredEvents?.length > 0 ? (
         <section className="relative w-full overflow-hidden">
