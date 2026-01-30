@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useConvexQuery } from "./use-convex-query";
+import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 // Pages that require onboarding (attendee-centered)
-const ATTENDEE_PAGES = ["/", "/explore", "/events", "/my-tickets", "/profile"];
+const ATTENDEE_PAGES = ["/explore"];
 
 export function useOnboarding() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -25,10 +26,10 @@ export function useOnboarding() {
       return;
     }
 
-    // if (isLoading || !currentUser) return;
+    if (isLoading || !currentUser) return;
 
     // Check if user hasn't completed onboarding
-    if (!currentUser?.hasCompletedOnboarding|| true) {
+    if (!currentUser.hasCompletedOnboarding) {
       // Check if current page requires onboarding
       const requiresOnboarding = ATTENDEE_PAGES.some((page) =>
         pathname.startsWith(page)
@@ -43,8 +44,19 @@ export function useOnboarding() {
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
-    // Refresh to get updated user data
-    router.refresh();
+    
+    // Remove onboarding=true from URL if present to prevent it from re-opening
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    if (newSearchParams.has("onboarding")) {
+       newSearchParams.delete("onboarding");
+       const newUrl = newSearchParams.toString() 
+         ? `${pathname}?${newSearchParams.toString()}`
+         : pathname;
+       router.push(newUrl);
+    } else {
+       // Refresh to get updated user data
+       router.refresh();
+    }
   };
 
   const handleOnboardingSkip = () => {

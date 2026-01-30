@@ -28,7 +28,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto lg:mx-0 text-center lg:text-left space-y-8">
           {/* Tagline */}
           <span className="inline-block py-1 px-3 rounded-full bg-white/5 border border-white/10 text-purple-300 text-xs font-semibold tracking-widest uppercase mb-4 backdrop-blur-md">
-            SPOTT* Event Intelligence
+            PLNNR* Event Intelligence
           </span>
 
           {/* Main Heading */}

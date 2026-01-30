@@ -1,51 +1,57 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { 
-  Heart, 
-  MapPin,
-  Laptop,
-  Music,
-  Trophy,
-  Palette,
-  Utensils,
-  Briefcase,
-  HeartPulse,
-  GraduationCap,
-  Gamepad2,
-  Users,
-  Tent,
-  Building2
-} from "lucide-react";
+"use client";
+
+import { useState, useMemo } from "react";
+import { MapPin, Heart, ArrowRight, ArrowLeft } from "lucide-react";
+import { useConvexMutation } from "@/hooks/use-convex-query";
+import { useConvexAuth } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { toast } from "sonner";
+import { State, City } from "country-state-city";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CATEGORIES } from "@/lib/data";
-
-const iconMap = {
-  tech: Laptop,
-  music: Music,
-  sports: Trophy,
-  art: Palette,
-  food: Utensils,
-  business: Briefcase,
-  health: HeartPulse,
-  education: GraduationCap,
-  gaming: Gamepad2,
-  networking: Users,
-  outdoor: Tent,
-  community: Building2,
-};
 
 export default function OnboardingModal({ isOpen, onClose, onComplete }) {
   const [step, setStep] = useState(1);
   const [selectedInterests, setSelectedInterests] = useState([]);
-  const progress = (step / 2) * 100;
+  const [location, setLocation] = useState({
+    state: "",
+    city: "",
+    country: "India",
+  });
+
+  const { mutate: completeOnboarding, isLoading } = useConvexMutation(
+    api.users.completeOnboarding
+  );
+
+  // Get Indian states
+  const indianStates = useMemo(() => {
+    return State.getStatesOfCountry("IN");
+  }, []);
+
+  // Get cities based on selected state
+  const cities = useMemo(() => {
+    if (!location.state) return [];
+    const selectedState = indianStates.find((s) => s.name === location.state);
+    if (!selectedState) return [];
+    return City.getCitiesOfState("IN", selectedState.isoCode);
+  }, [location.state, indianStates]);
 
   const toggleInterest = (categoryId) => {
     setSelectedInterests((prev) =>
@@ -57,82 +63,227 @@ export default function OnboardingModal({ isOpen, onClose, onComplete }) {
 
   const handleNext = () => {
     if (step === 1 && selectedInterests.length < 3) {
-      // You could add a toast here if you have sonner installed
+      toast.error("Please select at least 3 interests");
       return;
     }
-    // For now dealing with step 1 only as per user request focus
-    onComplete(); 
+    if (step === 2 && (!location.city || !location.state)) {
+      toast.error("Please select both state and city");
+      return;
+    }
+    if (step < 2) {
+      setStep(step + 1);
+    } else {
+      handleComplete();
+    }
   };
+
+  const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+
+  const handleComplete = async () => {
+    if (authLoading) return;
+    
+    if (!isAuthenticated) {
+      // Allow guest to proceed
+      try {
+        localStorage.setItem("plnnr_guest_onboarding", JSON.stringify({
+          location,
+          interests: selectedInterests,
+          completedAt: new Date().toISOString()
+        }));
+        toast.success("Preferences saved! Sign in to sync across devices.");
+        onComplete();
+      } catch (err) {
+        console.error("Failed to save guest preferences", err);
+        // Still allow closing
+        onComplete();
+      }
+      return;
+    }
+
+    try {
+      await completeOnboarding({
+        location: {
+          city: location.city,
+          state: location.state,
+          country: location.country,
+        },
+        interests: selectedInterests,
+      });
+      toast.success("Welcome to Spott! 🎉");
+      onComplete();
+    } catch (error) {
+      toast.error(`Failed to complete onboarding: ${error.message}`);
+      console.error(error);
+    }
+  };
+
+  const progress = (step / 2) * 100;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-3xl bg-black border-white/10 text-white p-0 overflow-hidden">
-        <div className="p-6 pb-0">
-           <DialogHeader>
-            <div className="mb-6">
-                <Progress value={progress} className="h-1 bg-white/10" indicatorClassName="bg-white" />
-            </div>
-            
-            <DialogTitle className="flex items-center gap-2 text-2xl font-bold">
-                <Heart className="h-6 w-6 text-purple-500 fill-purple-500" />
-                What interests you?
-            </DialogTitle>
-            
-            <DialogDescription className="text-gray-400 text-base mt-2">
-                Select at least 3 categories to personalize your experience
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-8">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                {CATEGORIES.map((category) => {
-                  const IconComponent = iconMap[category.id] || Laptop;
-                  const isSelected = selectedInterests.includes(category.id);
-                  
-                  return (
-                    <button
-                      key={category.id}
-                      onClick={() => toggleInterest(category.id)}
-                      className={`
-                        relative group p-4 rounded-xl border transition-all duration-300 flex flex-col items-center justify-center gap-3
-                        ${
-                          isSelected
-                            ? "bg-purple-500/20 border-purple-500"
-                            : "bg-white/5 border-white/10 hover:border-purple-500/50 hover:bg-white/10"
-                        }
-                      `}
-                    >
-                      <div 
-                        className={`
-                          p-3 rounded-full transition-all duration-300
-                          ${isSelected ? "bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]" : "bg-white/10 text-gray-400 group-hover:text-white group-hover:bg-white/20"}
-                        `}
-                      >
-                        <IconComponent className="w-6 h-6" />
-                      </div>
-                      <span className={`text-sm font-medium transition-colors ${isSelected ? "text-white" : "text-gray-400 group-hover:text-white"}`}>
-                        {category.label}
-                      </span>
-                    </button>
-                  );
-                })}
-            </div>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <div className="mb-4">
+            <Progress value={progress} className="h-1" />
           </div>
+          <DialogTitle className="flex items-center gap-2 text-2xl">
+            {step === 1 ? (
+              <>
+                <Heart className="w-6 h-6 text-purple-500" />
+                What interests you?
+              </>
+            ) : (
+              <>
+                <MapPin className="w-6 h-6 text-purple-500" />
+                Where are you located?
+              </>
+            )}
+          </DialogTitle>
+          <DialogDescription>
+            {step === 1
+              ? "Select at least 3 categories to personalize your experience"
+              : "We'll show you events happening near you"}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="py-4">
+          {/* Step 1: Select Interests */}
+          {step === 1 && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto p-2">
+                {CATEGORIES.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => toggleInterest(category.id)}
+                    className={`p-4 rounded-lg border-2 transition-all hover:scale-105 ${
+                      selectedInterests.includes(category.id)
+                        ? "border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/20"
+                        : "border-border hover:border-purple-300"
+                    }`}
+                  >
+                    <div className="text-2xl mb-2">{category.icon}</div>
+                    <div className="text-sm font-medium">{category.label}</div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant={
+                    selectedInterests.length >= 3 ? "default" : "secondary"
+                  }
+                >
+                  {selectedInterests.length} selected
+                </Badge>
+                {selectedInterests.length >= 3 && (
+                  <span className="text-sm text-green-500">
+                    ✓ Ready to continue
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Location */}
+          {step === 2 && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="state">State</Label>
+                  <Select
+                    value={location.state}
+                    onValueChange={(value) => {
+                      setLocation({ ...location, state: value, city: "" });
+                    }}
+                  >
+                    <SelectTrigger id="state" className="h-11 w-full">
+                      <SelectValue placeholder="Select state" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {indianStates.map((state) => (
+                        <SelectItem key={state.isoCode} value={state.name}>
+                          {state.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="city">City</Label>
+                  <Select
+                    value={location.city}
+                    onValueChange={(value) =>
+                      setLocation({ ...location, city: value })
+                    }
+                    disabled={!location.state}
+                  >
+                    <SelectTrigger id="city" className="h-11 w-full">
+                      <SelectValue
+                        placeholder={
+                          location.state ? "Select city" : "State first"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cities.length > 0 ? (
+                        cities.map((city) => (
+                          <SelectItem key={city.name} value={city.name}>
+                            {city.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-cities" disabled>
+                          No cities available
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {location.city && location.state && (
+                <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <MapPin className="w-5 h-5 text-purple-500 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Your location</p>
+                      <p className="text-sm text-muted-foreground">
+                        {location.city}, {location.state}, {location.country}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        <DialogFooter className="p-6 bg-white/5 border-t border-white/10 flex flex-row items-center justify-between">
-           <div className="text-sm text-gray-400">
-             {selectedInterests.length} selected
-           </div>
-           
-           <Button 
-             onClick={handleNext}
-             disabled={selectedInterests.length < 3}
-             className="bg-white text-black hover:bg-gray-200 font-semibold px-8 rounded-full transition-all"
-           >
-             Continue
-           </Button>
-        </DialogFooter>
+        {/* Actions */}
+        <div className="flex gap-3 pt-4">
+          {step > 1 && (
+            <Button
+              variant="outline"
+              onClick={() => setStep(step - 1)}
+              className="gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Button>
+          )}
+          <Button
+            onClick={handleNext}
+            disabled={isLoading}
+            className="flex-1 gap-2"
+          >
+            {isLoading
+              ? "Completing..."
+              : step === 2
+                ? "Complete Setup"
+                : "Continue"}
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

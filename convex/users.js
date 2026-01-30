@@ -1,68 +1,89 @@
+import { internal } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
-export const storeUser = mutation({
-  args: {
-    tokenIdentifier: v.optional(v.string()),
-    clerkId: v.optional(v.string()),
-    name: v.string(),
-    email: v.string(),
-    imageUrl: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const tokenIdentifier =
-      args.tokenIdentifier ?? args.clerkId;
-
-    if (!tokenIdentifier) {
-      throw new Error("Missing tokenIdentifier");
-    }
-
-    const existingUser = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", tokenIdentifier)
-      )
-      .unique();
-
-    if (existingUser) return existingUser;
-
-    const userId = await ctx.db.insert("users", {
-      tokenIdentifier,
-      clerkId: args.clerkId,
-      name: args.name,
-      email: args.email,
-      imageUrl: args.imageUrl,
-      hasCompletedOnboarding: false,
-      freeEventsCreated: 0,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
-
-    return await ctx.db.get(userId);
-  },
-});
-
-// ✅ ADD THIS BELOW (same file)
-export const getCurrentUser = query({
+// Store or update user from Clerk
+export const store = mutation({
   args: {},
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return null;
+    if (!identity) {
+      throw new Error("Called storeUser without authentication present");
+    }
 
-    return await ctx.db
+    // Check if we've already stored this identity before
+    const user = await ctx.db
       .query("users")
       .withIndex("by_token", (q) =>
         q.eq("tokenIdentifier", identity.tokenIdentifier)
       )
       .unique();
+
+    if (user !== null) {
+      // If we've seen this identity before but details changed, update them
+      const updates = {};
+      if (user.name !== identity.name) {
+        updates.name = identity.name ?? "Anonymous";
+      }
+      if (user.email !== identity.email) {
+        updates.email = identity.email ?? "";
+      }
+      if (user.imageUrl !== identity.pictureUrl) {
+        updates.imageUrl = identity.pictureUrl;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        updates.updatedAt = Date.now();
+        await ctx.db.patch(user._id, updates);
+      }
+
+      return user._id;
+    }
+
+    // If it's a new identity, create a new user with defaults
+    return await ctx.db.insert("users", {
+      email: identity.email ?? "",
+      tokenIdentifier: identity.tokenIdentifier,
+      name: identity.name ?? "Anonymous",
+      imageUrl: identity.pictureUrl,
+      hasCompletedOnboarding: false,
+      freeEventsCreated: 0,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
   },
 });
 
+// Get current authenticated user
+export const getCurrentUser = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+
+    // 🔹 Lookup by tokenIdentifier
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier)
+      )
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    return user;
+  },
+});
+
+// Complete onboarding (attendee preferences)
 export const completeOnboarding = mutation({
   args: {
     location: v.object({
       city: v.string(),
-      state: v.optional(v.string()),
+      state: v.optional(v.string()), // Added state field
       country: v.string(),
     }),
     interests: v.array(v.string()), // Min 3 categories
@@ -70,7 +91,7 @@ export const completeOnboarding = mutation({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new Error("Unauthenticated");
+      throw new Error("Unauthorized");
     }
 
     const user = await ctx.db
@@ -81,7 +102,7 @@ export const completeOnboarding = mutation({
       .unique();
 
     if (!user) {
-        throw new Error("User not found");
+      throw new Error("User not found");
     }
 
     await ctx.db.patch(user._id, {
@@ -91,6 +112,6 @@ export const completeOnboarding = mutation({
       updatedAt: Date.now(),
     });
 
-    return user._id; // Return ID or updated user
+    return user._id;
   },
 });

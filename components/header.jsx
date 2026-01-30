@@ -9,7 +9,7 @@ import useStoreUser from "@/hooks/useStoreUser";
 import { Button } from "@/components/ui/button";
 import { Plus, Ticket, Building } from "lucide-react";
 import OnboardingModal from "@/components/onboarding-modal";
-
+import SearchLocationBar from "./search-location-bar";
 import { useOnboarding } from "@/hooks/use-onboarding";
 
 const Header = () => {
@@ -45,6 +45,11 @@ const Header = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-4">
+             {/* Search  & Location Bar*/}
+             <div className="hidden md:flex flex-1 justify-center">
+             <SearchLocationBar/>
+             </div>
+
             {/* Pro */}
             <Button
               variant="ghost"
@@ -53,7 +58,6 @@ const Header = () => {
             >
               Pro
             </Button>
-
             {/* Explore */}
             <Button variant="ghost" size="sm" asChild>
               <Link href="/explore">Explore</Link>
@@ -91,10 +95,12 @@ const Header = () => {
                 </button>
               </SignInButton>
             )}
-
-            {/* Temporary Dialog Button */}
-
           </div>
+        </div>
+
+        {/* Mobile Search & Location Bar - Separate Row */}
+        <div className="md:hidden px-6 pb-4">
+          <SearchLocationBar />
         </div>
       </div>
 

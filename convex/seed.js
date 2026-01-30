@@ -186,7 +186,7 @@ Referee provided. Water and energy drinks available. Medical support on standby.
     capacity: 56,
     ticketType: "paid",
     ticketPrice: 350,
-    coverImage: "/images/corporate_cricket.png",
+    coverImage: "/images/sunday_football_tournament.png",
     themeColor: "#065f46",
   },
   {
@@ -485,8 +485,7 @@ Perfect for team building and corporate bonding!`,
     capacity: 180,
     ticketType: "paid",
     ticketPrice: 500,
-    coverImage:
-      "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=1200&q=80",
+    coverImage: "/images/corporate_cricket_tournament.png",
     themeColor: "#065f46",
   },
   {
@@ -701,7 +700,7 @@ Join a community of motivated runners. Early morning sessions.`,
     address: "Marina Beach Lighthouse, Chennai",
     capacity: 50,
     ticketType: "free",
-    coverImage: "https://images.unsplash.com/photo-1552674605-46d536d2e681?w=1200&q=80",
+    coverImage: "/images/marathon_training_bootcamp.png",
     themeColor: "#059669",
   },
   {

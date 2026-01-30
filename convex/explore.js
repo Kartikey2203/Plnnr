@@ -37,33 +37,37 @@ export const getEventsByLocation = query({
   },
   handler: async (ctx, args) => {
     const now = Date.now();
+    const limit = args.limit ?? 4;
 
-    //  must be let (we reassign it later)
-    let events = await ctx.db
-      .query("events")
-      .withIndex("by_start_date", (q) =>
-        q.gte("startDate", now)
-      )
-      .collect();
+    // Helper to fetch events
+    const fetchEvents = async (city, state) => {
+      let events = await ctx.db
+        .query("events")
+        .withIndex("by_start_date", (q) => q.gte("startDate", now))
+        .collect();
 
-    //  filter by city
-    if (args.city) {
-      const city = args.city.toLowerCase();
-      events = events.filter(
-        (e) => e.city?.toLowerCase() === city
-      );
+      if (city) {
+        events = events.filter((e) => e.city?.toLowerCase() === city.toLowerCase());
+      }
+      if (state) {
+        events = events.filter((e) => e.state?.toLowerCase() === state.toLowerCase());
+      }
+      
+      return events;
+    };
+
+    // 1. Try fetching for requested location
+    let results = await fetchEvents(args.city, args.state);
+
+    // 2. Fallback to Gurgaon if empty and a specific city was requested
+    if (results.length === 0 && args.city) {
+      results = await fetchEvents("Gurgaon", "Haryana");
     }
 
-    //  filter by state
-    if (args.state) {
-      const state = args.state.toLowerCase();
-      events = events.filter(
-        (e) => e.state?.toLowerCase() === state
-      );
-    }
-
-    //  optional limit
-    return events.slice(0, args.limit ?? 4);
+    // 3. Sort by date and slice
+    return results
+      .sort((a, b) => a.startDate - b.startDate)
+      .slice(0, limit);
   },
 });
 

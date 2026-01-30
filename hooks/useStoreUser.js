@@ -8,23 +8,17 @@ import { api } from "@/convex/_generated/api";
 export default function useStoreUser() {
   const { isSignedIn, userId } = useAuth();
   const { user } = useUser();
-  const storeUser = useMutation(api.users.storeUser);
+  const storeUser = useMutation(api.users.store);
   const [isLoading, setIsLoading] = useState(false);
 
-useEffect(() => {
-  if (!isSignedIn || !user || !userId) return;
+  useEffect(() => {
+    if (!isSignedIn || !user || !userId) return;
 
-  setIsLoading(true);
+    setIsLoading(true);
 
-storeUser({
-  clerkId: userId,
-  tokenIdentifier: userId,          // ✅ ADD THIS
-  name: user.fullName ?? "Anonymous",
-  email: user.primaryEmailAddress?.emailAddress ?? "",
-  imageUrl: user.imageUrl,          // ✅ FIX KEY
-}).finally(() => {
-    setIsLoading(false);
-  });
+    storeUser().finally(() => {
+      setIsLoading(false);
+    });
 }, [isSignedIn, user, userId]); //  FIXED
 
 

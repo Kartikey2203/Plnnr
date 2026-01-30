@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Calendar,
@@ -31,7 +31,7 @@ import {
 
 import { CATEGORIES } from "@/lib/data";
 import EventCard from "@/components/event-card";
-import OnboardingModal from "@/components/onboarding-modal";
+
 
 export default function ExplorePage() {
   const router = useRouter();
@@ -40,6 +40,23 @@ export default function ExplorePage() {
   );
 
   /* ================= DATA ================= */
+
+  const [guestLocation, setGuestLocation] = useState(null);
+
+  useEffect(() => {
+    // Check for guest onboarding data
+    const saved = localStorage.getItem("plnnr_guest_onboarding");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed?.location?.city) {
+          setGuestLocation(parsed.location);
+        }
+      } catch (e) {
+        console.error("Failed to parse guest location", e);
+      }
+    }
+  }, []);
 
   const { data: currentUser } = useConvexQuery(
     api.users.getCurrentUser
@@ -50,10 +67,13 @@ export default function ExplorePage() {
       limit: 10,
     });
 
+  const city = currentUser?.location?.city || guestLocation?.city || "Bangalore";
+  const state = currentUser?.location?.state || guestLocation?.state || "Karnataka";
+
   const { data: localEvents, isLoading: loadingLocal } =
     useConvexQuery(api.explore.getEventsByLocation, {
-      city: currentUser?.location?.city || "Bangalore",
-      state: currentUser?.location?.state || "Karnataka",
+      city,
+      state,
       limit: 4,
     });
 
@@ -80,8 +100,6 @@ export default function ExplorePage() {
   };
 
   const handleViewLocalEvents = () => {
-    const city = currentUser?.location?.city || "Bangalore";
-    const state = currentUser?.location?.state || "Karnataka";
     router.push(`/explore/${createLocationSlug(city, state)}`);
   };
 
@@ -91,11 +109,7 @@ export default function ExplorePage() {
   }));
 
   /* ================= EFFECTS ================= */
-  // Show onboarding modal if user hasn't completed it
-  const showOnboarding = 
-    !isLoading && 
-    currentUser && 
-    !currentUser.hasCompletedOnboarding;
+
 
   /* ================= LOADING ================= */
 
@@ -110,11 +124,7 @@ export default function ExplorePage() {
   return (
     <div className="min-h-screen bg-black text-white selection:bg-purple-500/30">
       
-      {/* <OnboardingModal 
-        isOpen={showOnboarding}
-        onClose={() => {}} // Prevent closing without completing
-        onComplete={() => window.location.reload()} // Reload to refresh state
-      /> */}
+
 
       {/* ================= HERO SECTION (Full Width) ================= */}
       {featuredEvents?.length > 0 ? (
@@ -225,7 +235,7 @@ export default function ExplorePage() {
             </h2>
             <p className="text-muted-foreground text-lg">
               Happening in{" "}
-              <span className="text-white font-medium">{currentUser?.location?.city || "Bangalore"}</span>
+              <span className="text-white font-medium">{city}</span>
             </p>
           </div>
 
@@ -255,7 +265,7 @@ export default function ExplorePage() {
         ) : (
           <div className="text-center py-12 bg-white/5 rounded-2xl border border-white/10 border-dashed">
             <p className="text-gray-400">
-              No upcoming events found in {currentUser?.location?.city || "Bangalore"}.
+              No upcoming events found in {city}.
             </p>
             <Button variant="link" className="text-purple-400 mt-2" onClick={() => router.push("/create-event")}>
               Host an event here
