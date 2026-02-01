@@ -16,9 +16,13 @@ export default function useStoreUser() {
 
     setIsLoading(true);
 
-    storeUser().finally(() => {
-      setIsLoading(false);
-    });
+    storeUser()
+      .catch((e) => {
+        console.error("Error storing user:", e);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
 }, [isSignedIn, user, userId]); //  FIXED
 
 

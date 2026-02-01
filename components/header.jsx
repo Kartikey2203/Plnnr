@@ -7,10 +7,13 @@ import { usePathname } from "next/navigation";
 import { BarLoader } from "react-spinners";
 import useStoreUser from "@/hooks/useStoreUser";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Plus, Ticket, Building } from "lucide-react";
+import ProLogo from "@/components/ui/pro-logo";
 import OnboardingModal from "@/components/onboarding-modal";
 import SearchLocationBar from "./search-location-bar";
 import { useOnboarding } from "@/hooks/use-onboarding";
+import UpgradeModal from "@/components/upgrade-modal";
 
 const Header = () => {
   const { isLoading } = useStoreUser();
@@ -19,7 +22,10 @@ const Header = () => {
     const {showOnboarding,handleOnboardingComplete,handleOnboardingSkip,needsOnboarding} = useOnboarding();
   const pathname = usePathname();
   const isLandingPage = pathname === "/" || pathname === "/explore";
-
+  const {has} = useAuth();
+  const hasPro = has?.({
+    plan: "pro"
+  })
   return (
     <>
     <nav className="fixed top-0 left-0 right-0 z-50">
@@ -34,15 +40,26 @@ const Header = () => {
         `}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <img
-              src="/plnnr_logo.jpg"
-              alt="Plnnr logo"
-              className="h-12 w-auto object-contain"
-            />
-          </Link>
-
+          <div className="flex items-center gap-3">
+            {/* Logo */}
+            <Link href="/" className="flex items-center transition-opacity hover:opacity-90">
+              <img
+                src="/plnnr_logo.jpg"
+                alt="Plnnr logo"
+                className="h-10 w-auto object-contain rounded-lg"
+              />
+            </Link>
+            
+            {/* Pro Icon */}
+            {hasPro && (
+              <Link href="/pro">
+                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 gap-1.5 text-white hover:from-purple-400 hover:to-pink-400 transition-all duration-300 cursor-pointer px-2 py-0.5 h-6 border-white/10 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_20px_rgba(168,85,247,0.6)]">
+                  <ProLogo className="w-3.5 h-3.5 text-white drop-shadow-md" />
+                  <span className="font-bold tracking-wider text-[10px] uppercase text-white/90">Pro</span>
+                </Badge>
+              </Link>
+            )}
+          </div>
           {/* Actions */}
           <div className="flex items-center gap-4">
              {/* Search  & Location Bar*/}
@@ -51,13 +68,13 @@ const Header = () => {
              </div>
 
             {/* Pro */}
-            <Button
+           { !hasPro && <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowUpgradeModal(true)}
             >
               Pro
-            </Button>
+            </Button>}
             {/* Explore */}
             <Button variant="ghost" size="sm" asChild>
               <Link href="/explore">Explore</Link>
@@ -118,6 +135,11 @@ const Header = () => {
                 isOpen={showOnboarding}
                 onClose={handleOnboardingSkip}
                 onComplete={handleOnboardingComplete}
+                />
+                <UpgradeModal 
+                  isOpen={showUpgradeModal} 
+                  onClose={setShowUpgradeModal} 
+                  trigger="header" 
                 />
                 </>
   );
