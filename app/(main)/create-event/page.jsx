@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { State, City } from "country-state-city";
-import { CalendarIcon, Loader2, Sparkles } from "lucide-react";
+import { CalendarIcon, Loader2, Sparkles, CalendarPlus } from "lucide-react";
 import { useConvexMutation, useConvexQuery } from "@/hooks/use-convex-query";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
@@ -206,377 +206,389 @@ export default function CreateEventPage() {
 
   return (
     <div
-      className="min-h-screen transition-colors duration-300 px-6 py-8 -mt-6 md:-mt-16 lg:-mt-5 lg:rounded-md"
-      style={{ backgroundColor: themeColor }}
+      className="min-h-screen transition-all duration-500 px-4 sm:px-6 pt-36 md:pt-24 pb-8 lg:rounded-md bg-gradient-to-br from-background via-background to-muted/30"
+      style={{ 
+        background: `linear-gradient(135deg, ${themeColor}15 0%, ${themeColor}05 100%)` 
+      }}
     >
-      {/* Header */}
-      <div className="max-w-6xl mx-auto flex flex-col gap-5 md:flex-row justify-between mb-10">
-        <div>
-          <h1 className="text-4xl font-bold">Create Event</h1>
-          {!hasPro && (
-            <p className="text-sm text-muted-foreground mt-2">
-              Free: {currentUser?.freeEventsCreated || 0}/1 events created
-            </p>
-          )}
-        </div>
-        <AIEventCreator onEventGenerated={handleAIGenerate} />
-      </div>
-
-      <div className="max-w-6xl mx-auto grid md:grid-cols-[320px_1fr] gap-10">
-        {/* LEFT: Image + Theme */}
-        <div className="space-y-6">
-          <div
-            className="aspect-square w-full rounded-xl overflow-hidden flex items-center justify-center cursor-pointer border"
-            onClick={() => setShowImagePicker(true)}
-          >
-            {coverImage ? (
-              <Image
-                src={coverImage}
-                alt="Cover"
-                className="w-full h-full object-cover"
-                width={500} // Adjust width as needed
-                height={500} // Adjust height as needed
-                priority // Optional: prioritize loading this image
-              />
-            ) : (
-              <span className="opacity-60 text-sm">
-                Click to add cover image
-              </span>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm">Theme Color</Label>
-              {!hasPro && (
-                <Badge variant="secondary" className="text-xs gap-1">
-                  <Sparkles className="w-3 h-3" />
-                  Pro
-                </Badge>
-              )}
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              {colorPresets.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  className={`w-10 h-10 rounded-full border-2 transition-all ${
-                    !hasPro && color !== "#1e3a8a"
-                      ? "opacity-40 cursor-not-allowed"
-                      : "hover:scale-110"
-                  }`}
-                  style={{
-                    backgroundColor: color,
-                    borderColor: themeColor === color ? "white" : "transparent",
-                  }}
-                  onClick={() => handleColorClick(color)}
-                  title={
-                    !hasPro && color !== "#1e3a8a"
-                      ? "Upgrade to Pro for custom colors"
-                      : ""
-                  }
-                />
-              ))}
-              {!hasPro && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUpgradeReason("color");
-                    setShowUpgradeModal(true);
-                  }}
-                  className="w-10 h-10 rounded-full border-2 border-dashed border-purple-300 flex items-center justify-center hover:border-purple-500 transition-colors"
-                  title="Unlock more colors with Pro"
-                >
-                  <Sparkles className="w-5 h-5 text-purple-400" />
-                </button>
-              )}
-            </div>
-            {!hasPro && (
-              <p className="text-xs text-muted-foreground">
-                Upgrade to Pro to unlock custom theme colors
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* RIGHT: Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          {/* Title */}
+      <div className="max-w-6xl mx-auto mb-8 relative">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
           <div>
-            <Input
-              {...register("title")}
-              placeholder="Event Name"
-              className="text-3xl font-semibold bg-transparent border-none focus-visible:ring-0"
-            />
-            {errors.title && (
-              <p className="text-sm text-red-400 mt-1">
-                {errors.title.message}
+            <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+              Create Event
+            </h1>
+            {!hasPro && (
+              <p className="text-sm text-muted-foreground mt-2 font-medium">
+                Free Plan: {currentUser?.freeEventsCreated || 0}/1 events created
               </p>
             )}
           </div>
+          <AIEventCreator onEventGenerated={handleAIGenerate} />
+        </div>
 
-          {/* Date + Time */}
-          <div className="grid grid-cols-2 gap-6">
-            {/* Start */}
-            <div className="space-y-2">
-              <Label className="text-sm">Start</Label>
-              <div className="grid grid-cols-[1fr_auto] gap-2">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-between"
-                    >
-                      {startDate ? format(startDate, "PPP") : "Pick date"}
-                      <CalendarIcon className="w-4 h-4 opacity-60" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="p-0">
-                    <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={(date) => setValue("startDate", date)}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* LEFT COLUMN: Media & Theme */}
+            <div className="lg:col-span-1 space-y-6">
+              {/* Cover Image Card */}
+              <div 
+                className="group relative aspect-video w-full rounded-2xl overflow-hidden border border-border/50 bg-background/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all cursor-pointer"
+                onClick={() => setShowImagePicker(true)}
+              >
+                {coverImage ? (
+                  <>
+                    <Image
+                      src={coverImage}
+                      alt="Cover"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      width={800}
+                      height={450}
+                      priority
                     />
-                  </PopoverContent>
-                </Popover>
-                <Input
-                  type="time"
-                  {...register("startTime")}
-                  placeholder="hh:mm"
-                />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                      <span className="opacity-0 group-hover:opacity-100 text-white font-medium bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm transition-opacity">
+                        Change Cover
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-muted-foreground bg-muted/20 group-hover:bg-muted/30 transition-colors">
+                    <div className="p-4 rounded-full bg-background shadow-sm">
+                      <Sparkles className="w-6 h-6" />
+                    </div>
+                    <span className="font-medium">Add Cover Image</span>
+                  </div>
+                )}
               </div>
-              {(errors.startDate || errors.startTime) && (
-                <p className="text-sm text-red-400">
-                  {errors.startDate?.message || errors.startTime?.message}
-                </p>
-              )}
-            </div>
 
-            {/* End */}
-            <div className="space-y-2">
-              <Label className="text-sm">End</Label>
-              <div className="grid grid-cols-[1fr_auto] gap-2">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-between"
-                    >
-                      {endDate ? format(endDate, "PPP") : "Pick date"}
-                      <CalendarIcon className="w-4 h-4 opacity-60" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="p-0">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={(date) => setValue("endDate", date)}
-                      disabled={(date) => date < (startDate || new Date())}
+              {/* Theme Color Card */}
+              <div className="p-6 rounded-2xl border border-border/50 bg-background/50 backdrop-blur-sm shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-semibold">Theme Color</Label>
+                  {!hasPro && (
+                    <Badge variant="secondary" className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 text-purple-600 border-purple-200">
+                      <Sparkles className="w-3 h-3 mr-1" /> Pro
+                    </Badge>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-5 gap-3">
+                  {colorPresets.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      className={`w-10 h-10 rounded-full border-2 transition-all duration-300 ${
+                        themeColor === color 
+                          ? "ring-2 ring-offset-2 ring-foreground scale-110" 
+                          : "hover:scale-110 hover:shadow-lg"
+                      } ${
+                        !hasPro && color !== "#1e3a8a" ? "opacity-40 grayscale cursor-not-allowed" : ""
+                      }`}
+                      style={{
+                        backgroundColor: color,
+                        borderColor: themeColor === color ? "white" : "transparent",
+                      }}
+                      onClick={() => handleColorClick(color)}
                     />
-                  </PopoverContent>
-                </Popover>
-                <Input
-                  type="time"
-                  {...register("endTime")}
-                  placeholder="hh:mm"
-                />
+                  ))}
+                  
+                  {!hasPro && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUpgradeReason("color");
+                        setShowUpgradeModal(true);
+                      }}
+                      className="w-10 h-10 rounded-full border-2 border-dashed border-purple-300 flex items-center justify-center hover:border-purple-500 hover:bg-purple-50 transition-all"
+                    >
+                      <Sparkles className="w-4 h-4 text-purple-500" />
+                    </button>
+                  )}
+                </div>
               </div>
-              {(errors.endDate || errors.endTime) && (
-                <p className="text-sm text-red-400">
-                  {errors.endDate?.message || errors.endTime?.message}
-                </p>
-              )}
             </div>
-          </div>
 
-          {/* Category */}
-          <div className="space-y-2">
-            <Label className="text-sm">Category</Label>
-            <Controller
-              control={control}
-              name="category"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.icon} {cat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            {errors.category && (
-              <p className="text-sm text-red-400">{errors.category.message}</p>
-            )}
-          </div>
+            {/* RIGHT COLUMN: Form Details */}
+            <div className="lg:col-span-2 space-y-8">
+              <div className="space-y-6 p-6 rounded-2xl border border-border/50 bg-background/50 backdrop-blur-sm shadow-sm">
+                
+                {/* Title Input */}
+                <div className="relative">
+                  <Input
+                    {...register("title")}
+                    placeholder="Event Name"
+                    className="text-3xl md:text-4xl font-bold bg-transparent border-none border-b-2 border-border/50 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground transition-colors placeholder:text-muted-foreground h-auto py-2"
+                  />
+                  {errors.title && (
+                    <p className="text-sm text-red-500 mt-2 font-medium animate-in slide-in-from-top-1">
+                      {errors.title.message}
+                    </p>
+                  )}
+                </div>
 
-          {/* Location */}
-          <div className="space-y-3">
-            <Label className="text-sm">Location</Label>
-            <div className="grid grid-cols-2 gap-4">
-              <Controller
-                control={control}
-                name="state"
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={(val) => {
-                      field.onChange(val);
-                      setValue("city", "");
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select state" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {indianStates.map((s) => (
-                        <SelectItem key={s.isoCode} value={s.name}>
-                          {s.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                {/* Category & Capacity Grid */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Category</Label>
+                    <Controller
+                      control={control}
+                      name="category"
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger className="bg-background/60 border-border/60 h-11">
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CATEGORIES.map((cat) => (
+                              <SelectItem key={cat.id} value={cat.id}>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg">{cat.icon}</span>
+                                  <span>{cat.label}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.category && <p className="text-xs text-red-500">{errors.category.message}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Capacity</Label>
+                    <Input
+                      type="number"
+                      {...register("capacity", { valueAsNumber: true })}
+                      placeholder="Max attendees"
+                      className="bg-background/60 border-border/60 h-11"
+                    />
+                    {errors.capacity && <p className="text-xs text-red-500">{errors.capacity.message}</p>}
+                  </div>
+                </div>
+
+                {/* Date & Time Section */}
+                <div className="space-y-4 pt-2">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <CalendarIcon className="w-5 h-5 text-primary" /> 
+                    Date & Time
+                  </h3>
+                  
+                  <div className="grid md:grid-cols-2 gap-6 p-4 rounded-xl bg-muted/20 border border-border/50">
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Starts</Label>
+                      <div className="grid grid-cols-[1fr_auto] gap-3">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-start text-left font-normal bg-background/80 hover:bg-background">
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={startDate}
+                              onSelect={(date) => setValue("startDate", date)}
+                              disabled={(date) => date < new Date().setHours(0, 0, 0, 0)}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <Input
+                          type="time"
+                          {...register("startTime")}
+                          className="w-24 bg-background/80"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Ends</Label>
+                      <div className="grid grid-cols-[1fr_auto] gap-3">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-start text-left font-normal bg-background/80 hover:bg-background" disabled={!startDate}>
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {endDate ? format(endDate, "PPP") : <span>{startDate ? "Pick a date" : "Select Start Date First"}</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={endDate}
+                              onSelect={(date) => setValue("endDate", date)}
+                              disabled={(date) => {
+                                const start = startDate ? new Date(startDate) : new Date();
+                                start.setHours(0, 0, 0, 0);
+                                return date < start;
+                              }}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <Input
+                          type="time"
+                          {...register("endTime")}
+                          className="w-24 bg-background/80"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  {(errors.startDate || errors.startTime || errors.endDate || errors.endTime) && (
+                    <div className="text-sm text-red-500 px-2">
+                      {errors.startDate?.message || errors.startTime?.message || errors.endDate?.message || errors.endTime?.message}
+                    </div>
+                  )}
+                </div>
+
+                {/* Location Section */}
+                <div className="space-y-4 pt-2">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <span className="bg-primary/10 p-1 rounded-md">📍</span>
+                    Location Details
+                  </h3>
+                  
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Controller
+                      control={control}
+                      name="state"
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={(val) => {
+                            field.onChange(val);
+                            setValue("city", "");
+                          }}
+                        >
+                          <SelectTrigger className="bg-background/60 h-11">
+                            <SelectValue placeholder="Select State" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {indianStates.map((s) => (
+                              <SelectItem key={s.isoCode} value={s.name}>{s.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+
+                    <Controller
+                      control={control}
+                      name="city"
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={!selectedState}
+                        >
+                          <SelectTrigger className="bg-background/60 h-11">
+                            <SelectValue placeholder={selectedState ? "Select City" : "Select State First"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {cities.map((c) => (
+                              <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Input
+                      {...register("venue")}
+                      placeholder="Venue Name or Google Maps Link"
+                      type="url"
+                      className="bg-background/60 h-11"
+                    />
+                    {errors.venue && <p className="text-sm text-red-500">{errors.venue.message}</p>}
+
+                    <Textarea
+                      {...register("address")}
+                      placeholder="Detailed Address (Street, Building, etc.)"
+                      className="bg-background/60 resize-none"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div className="space-y-2">
+                  <Label>Event Description</Label>
+                  <Textarea
+                    {...register("description")}
+                    placeholder="Tell us all the exciting details..."
+                    className="min-h-[150px] bg-background/60 focus:bg-background transition-colors"
+                  />
+                  {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
+                </div>
+
+                {/* Ticketing Section - Simplified */}
+                <div className="p-4 rounded-xl bg-muted/20 border border-border/50">
+                  <div className="flex flex-col md:flex-row md:items-center gap-6">
+                    <div className="flex items-center gap-6">
+                      <Label className="text-base font-semibold">Ticket Type</Label>
+                      <div className="flex items-center gap-4 bg-background/50 p-1 rounded-lg border border-border/50">
+                        <label className={`cursor-pointer px-4 py-1.5 rounded-md transition-all ${ticketType === 'free' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}>
+                          <input type="radio" value="free" {...register("ticketType")} className="hidden" />
+                          Free
+                        </label>
+                        <label className={`cursor-pointer px-4 py-1.5 rounded-md transition-all ${ticketType === 'paid' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}>
+                          <input type="radio" value="paid" {...register("ticketType")} className="hidden" />
+                          Paid
+                        </label>
+                      </div>
+                    </div>
+
+                    {ticketType === "paid" && (
+                      <div className="flex-1 animate-in fade-in slide-in-from-left-4">
+                        <Input
+                          type="number"
+                          placeholder="Price per ticket (₹)"
+                          {...register("ticketPrice", { valueAsNumber: true })}
+                          className="bg-background/80 h-11"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-7 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all text-white hover:brightness-110"
+                style={{ backgroundColor: themeColor }}
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" /> Publishing Event...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <CalendarPlus className="w-5 h-5" /> Create Event
+                  </span>
                 )}
-              />
-
-              <Controller
-                control={control}
-                name="city"
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={!selectedState}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={
-                          selectedState ? "Select city" : "Select state first"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {cities.map((c) => (
-                        <SelectItem key={c.name} value={c.name}>
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-
-            <div className="space-y-2 mt-6">
-              <Label className="text-sm">Venue Details</Label>
-
-              <Input
-                {...register("venue")}
-                placeholder="Venue link (Google Maps Link)"
-                type="url"
-              />
-              {errors.venue && (
-                <p className="text-sm text-red-400">{errors.venue.message}</p>
-              )}
-
-              <Input
-                {...register("address")}
-                placeholder="Full address / street / building (optional)"
-              />
+              </Button>
             </div>
           </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea
-              {...register("description")}
-              placeholder="Tell people about your event..."
-              rows={4}
-            />
-            {errors.description && (
-              <p className="text-sm text-red-400">
-                {errors.description.message}
-              </p>
-            )}
-          </div>
-
-          {/* Ticketing */}
-          <div className="space-y-3">
-            <Label className="text-sm">Tickets</Label>
-            <div className="flex items-center gap-6">
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  value="free"
-                  {...register("ticketType")}
-                  defaultChecked
-                />{" "}
-                Free
-              </label>
-              <label className="flex items-center gap-2">
-                <input type="radio" value="paid" {...register("ticketType")} />{" "}
-                Paid
-              </label>
-            </div>
-
-            {ticketType === "paid" && (
-              <Input
-                type="number"
-                placeholder="Ticket price ₹"
-                {...register("ticketPrice", { valueAsNumber: true })}
-              />
-            )}
-          </div>
-
-          {/* Capacity */}
-          <div className="space-y-2">
-            <Label className="text-sm">Capacity</Label>
-            <Input
-              type="number"
-              {...register("capacity", { valueAsNumber: true })}
-              placeholder="Ex: 100"
-            />
-            {errors.capacity && (
-              <p className="text-sm text-red-400">{errors.capacity.message}</p>
-            )}
-          </div>
-
-          {/* Submit */}
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-6 text-lg rounded-xl"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating...
-              </>
-            ) : (
-              "Create Event"
-            )}
-          </Button>
         </form>
       </div>
 
-      {/* Unsplash Picker */}
-      {showImagePicker && (
-        <UnsplashImagePicker
-          isOpen={showImagePicker}
-          onClose={() => setShowImagePicker(false)}
-          onSelect={(url) => {
-            setValue("coverImage", url);
-            setShowImagePicker(false);
-          }}
-        />
-      )}
-
-      {/* Upgrade Modal */}
+      {/* Utilities */}
+      <UnsplashImagePicker
+        isOpen={showImagePicker}
+        onClose={() => setShowImagePicker(false)}
+        initialQuery={watch("category") || "event"}
+        onSelect={(url) => {
+          setValue("coverImage", url);
+          setShowImagePicker(false);
+        }}
+      />
+      
       <UpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}

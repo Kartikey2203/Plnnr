@@ -40,9 +40,14 @@ export default function AIEventCreator({ onEventGenerated }) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-blue-500/20 hover:bg-blue-500/20">
-          <Sparkles className="w-4 h-4 text-purple-400" />
-          Generate with AI
+        <Button 
+          variant="outline" 
+          className="gap-2 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:bg-purple-500/20 hover:border-purple-500/40 shadow-sm hover:shadow-purple-500/10 transition-all group"
+        >
+          <Sparkles className="w-4 h-4 text-purple-500 group-hover:scale-110 transition-transform duration-500" />
+          <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-medium">
+            Generate with AI
+          </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

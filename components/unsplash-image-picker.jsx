@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Search, Loader2 } from "lucide-react";
 import {
@@ -12,21 +12,43 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export default function UnsplashImagePicker({ isOpen, onClose, onSelect }) {
-  const [query, setQuery] = useState("event");
+export default function UnsplashImagePicker({ isOpen, onClose, onSelect, initialQuery = "event" }) {
+  const [query, setQuery] = useState(initialQuery);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      const q = initialQuery || "event";
+      setQuery(q);
+      searchImages(q);
+    }
+  }, [isOpen, initialQuery]);
 
   const searchImages = async (searchQuery) => {
     setLoading(true);
+    setError(null);
     try {
+      const accessKey = process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY;
+      if (!accessKey) {
+        throw new Error("Missing Unsplash Access Key");
+      }
+
       const response = await fetch(
-        `https://api.unsplash.com/search/photos?query=${searchQuery}&per_page=12&client_id=${process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY}`
+        `https://api.unsplash.com/search/photos?query=${searchQuery}&per_page=12&client_id=${accessKey}`
       );
+      
+      if (!response.ok) {
+         const errorData = await response.json().catch(() => ({}));
+         throw new Error(`API Error: ${response.status} ${errorData.errors?.[0] || response.statusText}`);
+      }
+      
       const data = await response.json();
       setImages(data.results || []);
     } catch (error) {
       console.error("Error fetching images:", error);
+      setError(error.message || "Failed to load images");
     } finally {
       setLoading(false);
     }
@@ -65,6 +87,10 @@ export default function UnsplashImagePicker({ isOpen, onClose, onSelect }) {
             <div className="flex items-center justify-center h-64">
               <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
             </div>
+          ) : error ? (
+            <div className="flex items-center justify-center h-64 text-red-500">
+              {error}
+            </div>
           ) : (
             <div className="grid grid-cols-3 gap-4 py-4">
               {images.map((image) => (
@@ -85,9 +111,9 @@ export default function UnsplashImagePicker({ isOpen, onClose, onSelect }) {
             </div>
           )}
 
-          {!loading && images.length === 0 && (
+          {!loading && !error && images.length === 0 && (
             <div className="text-center text-muted-foreground py-12">
-              Search for images to get started
+              No images found for "{query}".
             </div>
           )}
         </div>
