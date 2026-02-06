@@ -51,14 +51,14 @@ export default function RegisterModal({ event, isOpen, onClose }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Register for {event.title}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="max-w-[360px] w-full p-0 overflow-hidden bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl">
+        <DialogHeader className="p-6 pb-2">
+          <DialogTitle className="text-xl text-center">Register for {event.title}</DialogTitle>
+          <DialogDescription className="text-zinc-400 text-center">
             Fill in your details to secure your spot.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 p-6 pt-2">
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
             <Input
