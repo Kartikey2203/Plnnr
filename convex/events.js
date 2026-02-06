@@ -30,11 +30,21 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     try {
-      const user = await ctx.runQuery(internal.users.getCurrentUser);
-      
-      if (!user) {
-        throw new Error("User not found");
-      }
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Authentication failed. Clerk JWT Template 'convex' is missing. Please configure it in Clerk Dashboard.");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier)
+      )
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found in database. Please ensure you are signed in.");
+    }
 
       // SERVER-SIDE CHECK: Verify event limit for Free users
       if (!args.hasPro && (user.freeEventsCreated ?? 0) >= 1) {
@@ -46,7 +56,7 @@ export const create = mutation({
       const { hasPro, ...eventData } = args;
 
       const defaultColor = "#1e3a8a";
-      if (!hasPro && args.themeColor && args.themeColor !== defaultColor) {
+      if (!args.hasPro && args.themeColor && args.themeColor !== defaultColor) {
         throw new Error(
           "Custom theme colors are a Pro feature. Please upgrade to Pro."
         );

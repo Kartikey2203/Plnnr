@@ -5,7 +5,7 @@ import { toast } from "sonner";
 export const useConvexQuery = (query, ...args) => {
   const result = useQuery(query, ...args);
   const [data, setData] = useState(undefined);
-  const isSkipped = args.length > 0 && args[0] === "skip";
+  const isSkipped = query === "skip" || (args.length > 0 && args[0] === "skip");
   const [isLoading, setIsLoading] = useState(!isSkipped);
   const [error, setError] = useState(null);
 

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/incompatible-library */
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,6 +9,7 @@ import * as z from "zod";
 import { format } from "date-fns";
 import { State, City } from "country-state-city";
 import { CalendarIcon, Loader2, Sparkles, CalendarPlus } from "lucide-react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useConvexMutation, useConvexQuery } from "@/hooks/use-convex-query";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
@@ -39,6 +40,9 @@ import UpgradeModal from "@/components/upgrade-modal";
 import { CATEGORIES } from "@/lib/data";
 import Image from "next/image";
 
+
+
+
 // HH:MM in 24h
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
@@ -60,7 +64,20 @@ const eventSchema = z.object({
   ticketPrice: z.number().optional(),
   coverImage: z.string().optional(),
   themeColor: z.string().default("#1e3a8a"),
+}).superRefine((data, ctx) => {
+  // REQUIRE ticket price if paid
+  if (data.ticketType === "paid") {
+    if (!data.ticketPrice || data.ticketPrice <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Price is required for paid events",
+        path: ["ticketPrice"],
+      });
+    }
+  }
 });
+
+
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -69,12 +86,23 @@ export default function CreateEventPage() {
   const [upgradeReason, setUpgradeReason] = useState("limit"); // "limit" or "color"
 
   // Check if user has Pro plan
-  const { has } = useAuth();
+  const { has, isLoaded, isSignedIn } = useAuth();
+  const { isAuthenticated } = useConvexAuth();
+  
   const hasPro = has?.({ plan: "pro" });
 
-  const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
+  // Redirect if not authenticated
+  if (isLoaded && !isSignedIn) {
+    router.push("/sign-in");
+    return null;
+  }
+
+  const { data: currentUser } = useConvexQuery(
+    api.users.getCurrentUser,
+    isSignedIn ? undefined : "skip"
+  );
   const { mutate: createEvent, isLoading } = useConvexMutation(
-    api.events.createEvent
+    api.events.create
   );
 
   const {
@@ -116,8 +144,21 @@ export default function CreateEventPage() {
 
   // Color presets - show all for Pro, only default for Free
   const colorPresets = [
-    "#1e3a8a", // Default color (always available)
-    ...(hasPro ? ["#4c1d95", "#065f46", "#92400e", "#7f1d1d", "#831843"] : []),
+    "#1e3a8a", // Default Blue
+    ...(hasPro ? [
+      "#6366f1", // Electric Indigo
+      "#d946ef", // Cyber Fuchsia
+      "#0ea5e9", // Sky Blue
+      "#10b981", // Emerald Green
+      "#f59e0b", // Amber Gold
+      "#f43f5e", // Sunset Rose
+      "#4c1d95", // Deep Purple
+      "#065f46", // Dark Teal
+      "#92400e", // Burnt Orange
+      "#7f1d1d", // Deep Red
+      "#831843", // Burgundy
+      "#475569", // Slate Gray
+    ] : []),
   ];
 
   const handleColorClick = (color) => {
@@ -140,6 +181,12 @@ export default function CreateEventPage() {
 
   const onSubmit = async (data) => {
     try {
+      // User requested to remove this check.
+      // if (!isSignedIn || !currentUser) {
+      //   toast.error("Please wait for user data to load.");
+      //   return;
+      // }
+
       const start = combineDateTime(data.startDate, data.startTime);
       const end = combineDateTime(data.endDate, data.endTime);
 
@@ -191,7 +238,12 @@ export default function CreateEventPage() {
       toast.success("Event created successfully! 🎉");
       router.push("/my-events");
     } catch (error) {
-      toast.error(error.message || "Failed to create event");
+      console.error("Create event error:", error);
+      if (error.message.includes("Unauthenticated call")) {
+        toast.error("Authentication failed. Please try signing out and back in.");
+      } else {
+        toast.error(error.message || "Failed to create event");
+      }
     }
   };
 
@@ -201,16 +253,118 @@ export default function CreateEventPage() {
     setValue("category", generatedData.category);
     setValue("capacity", generatedData.suggestedCapacity);
     setValue("ticketType", generatedData.suggestedTicketType);
+    if (generatedData.venue) setValue("address", generatedData.venue);
+
+    // Auto-fill City and State
+    if (generatedData.city) {
+      const cityName = generatedData.city.trim();
+      const allStates = State.getStatesOfCountry("IN");
+      const allCities = City.getAllCities();
+
+      // 1. Check if the "city" is actually a State name (e.g. "Goa")
+      const foundState = allStates.find(
+        (s) => s.name.toLowerCase() === cityName.toLowerCase()
+      );
+
+      if (foundState) {
+        setValue("state", foundState.name);
+        const stateCities = City.getCitiesOfState("IN", foundState.isoCode);
+        if (stateCities.length > 0) {
+          setTimeout(() => {
+            setValue("city", stateCities[0].name); // Pick first city of state as fallback
+          }, 100);
+        }
+      } else {
+        // 2. Otherwise look for the City
+        let foundCity = allCities.find(
+          (c) => c.name.toLowerCase() === cityName.toLowerCase() && c.countryCode === "IN"
+        );
+        
+        // Fallback: search for city that contains the name
+        if (!foundCity) {
+          foundCity = allCities.find(
+            (c) => (cityName.toLowerCase().includes(c.name.toLowerCase()) || 
+                   c.name.toLowerCase().includes(cityName.toLowerCase())) && 
+                   c.countryCode === "IN"
+          );
+        }
+        
+        if (foundCity) {
+          const state = State.getStateByCodeAndCountry(foundCity.stateCode, "IN");
+          if (state) {
+            setValue("state", state.name);
+            setTimeout(() => {
+              setValue("city", foundCity.name);
+            }, 100);
+          }
+        }
+      }
+    }
+
+    // Auto-fill Date and Time
+    if (generatedData.startDate) {
+      const startObj = new Date(generatedData.startDate);
+      if (!isNaN(startObj.getTime())) {
+        setValue("startDate", startObj);
+      }
+    }
+    
+    if (generatedData.endDate) {
+      const endObj = new Date(generatedData.endDate);
+      if (!isNaN(endObj.getTime())) {
+        setValue("endDate", endObj);
+      }
+    } else if (generatedData.startDate) {
+      // Fallback if AI didn't provide endDate
+      setValue("endDate", new Date(generatedData.startDate));
+    }
+
+    if (generatedData.startTime) {
+      setValue("startTime", generatedData.startTime);
+      
+      if (generatedData.endTime) {
+        setValue("endTime", generatedData.endTime);
+      } else {
+        // Default end time to 2 hours later if not provided by AI
+        const [h, m] = generatedData.startTime.split(":").map(Number);
+        const endH = (h + 2) % 24;
+        setValue("endTime", `${endH.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`);
+      }
+    }
+
     toast.success("Event details filled! Customize as needed.");
   };
 
+  // Debug effect to check user data loading
+  useEffect(() => {
+    console.log("CreateEventPage Auth State:", { isSignedIn, isLoaded, currentUser });
+  }, [isSignedIn, isLoaded, currentUser]);
+
   return (
     <div
-      className="min-h-screen transition-all duration-500 px-4 sm:px-6 pt-36 md:pt-24 pb-8 lg:rounded-md bg-gradient-to-br from-background via-background to-muted/30"
+      className="min-h-screen transition-all duration-700 px-4 sm:px-6 pt-36 md:pt-24 pb-8 lg:rounded-md relative overflow-hidden"
       style={{ 
-        background: `linear-gradient(135deg, ${themeColor}15 0%, ${themeColor}05 100%)` 
+        backgroundColor: "black",
+        "--theme-primary": themeColor,
       }}
     >
+      {/* Dynamic Background Glows */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div 
+          className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full blur-[120px] opacity-20 transition-all duration-1000"
+          style={{ backgroundColor: themeColor }}
+        />
+        <div 
+          className="absolute top-[20%] -right-[5%] w-[30%] h-[30%] rounded-full blur-[100px] opacity-10 transition-all duration-1000 delay-150"
+          style={{ backgroundColor: themeColor }}
+        />
+        <div 
+          className="absolute -bottom-[10%] left-[20%] w-[50%] h-[50%] rounded-full blur-[150px] opacity-15 transition-all duration-1000 delay-300"
+          style={{ backgroundColor: themeColor }}
+        />
+      </div>
+
+
       <div className="max-w-6xl mx-auto mb-8 relative">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
@@ -223,11 +377,19 @@ export default function CreateEventPage() {
                 Free Plan: {currentUser?.freeEventsCreated || 0}/1 events created
               </p>
             )}
+            
           </div>
-          <AIEventCreator onEventGenerated={handleAIGenerate} />
+          {/* AI Event Creator */}
+          <AIEventCreator onEventGenerated={handleAIGenerate} themeColor={themeColor} />
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={handleSubmit((data) => {
+          console.log("Form valid, submitting...", data);
+          onSubmit(data);
+        }, (errors) => {
+          console.error("Form validation failed:", errors);
+          toast.error("Please check the form for errors: " + Object.keys(errors).join(", "));
+        })} className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* LEFT COLUMN: Media & Theme */}
             <div className="lg:col-span-1 space-y-6">
@@ -318,7 +480,7 @@ export default function CreateEventPage() {
                   <Input
                     {...register("title")}
                     placeholder="Event Name"
-                    className="text-3xl md:text-4xl font-bold bg-transparent border-none border-b-2 border-border/50 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground transition-colors placeholder:text-muted-foreground h-auto py-2"
+                    className="text-3xl md:text-4xl font-bold bg-transparent border-none border-b-2 border-border/50 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[var(--theme-primary)] transition-colors placeholder:text-muted-foreground h-auto py-2"
                   />
                   {errors.title && (
                     <p className="text-sm text-red-500 mt-2 font-medium animate-in slide-in-from-top-1">
@@ -336,7 +498,7 @@ export default function CreateEventPage() {
                       name="category"
                       render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger className="bg-background/60 border-border/60 h-11">
+                          <SelectTrigger className="bg-background/60 border-border/60 h-11 focus:ring-[var(--theme-primary)]/30 focus:border-[var(--theme-primary)]/50">
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
@@ -361,7 +523,7 @@ export default function CreateEventPage() {
                       type="number"
                       {...register("capacity", { valueAsNumber: true })}
                       placeholder="Max attendees"
-                      className="bg-background/60 border-border/60 h-11"
+                      className="bg-background/60 border-border/60 h-11 focus-visible:ring-[var(--theme-primary)]/30 focus-visible:border-[var(--theme-primary)]/50"
                     />
                     {errors.capacity && <p className="text-xs text-red-500">{errors.capacity.message}</p>}
                   </div>
@@ -370,7 +532,7 @@ export default function CreateEventPage() {
                 {/* Date & Time Section */}
                 <div className="space-y-4 pt-2">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <CalendarIcon className="w-5 h-5 text-primary" /> 
+                    <CalendarIcon className="w-5 h-5" style={{ color: themeColor }} /> 
                     Date & Time
                   </h3>
                   
@@ -445,7 +607,7 @@ export default function CreateEventPage() {
                 {/* Location Section */}
                 <div className="space-y-4 pt-2">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <span className="bg-primary/10 p-1 rounded-md">📍</span>
+                    <span className="p-1 rounded-md" style={{ backgroundColor: `${themeColor}20` }}>📍</span>
                     Location Details
                   </h3>
                   
@@ -507,7 +669,7 @@ export default function CreateEventPage() {
                     <Textarea
                       {...register("address")}
                       placeholder="Detailed Address (Street, Building, etc.)"
-                      className="bg-background/60 resize-none"
+                      className="bg-background/60 resize-none focus-visible:ring-[var(--theme-primary)]/30 focus-visible:border-[var(--theme-primary)]/50"
                       rows={2}
                     />
                   </div>
@@ -519,7 +681,7 @@ export default function CreateEventPage() {
                   <Textarea
                     {...register("description")}
                     placeholder="Tell us all the exciting details..."
-                    className="min-h-[150px] bg-background/60 focus:bg-background transition-colors"
+                    className="min-h-[150px] bg-background/60 focus:bg-background transition-colors focus-visible:ring-[var(--theme-primary)]/30 focus-visible:border-[var(--theme-primary)]/50"
                   />
                   {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
                 </div>
@@ -529,13 +691,13 @@ export default function CreateEventPage() {
                   <div className="flex flex-col md:flex-row md:items-center gap-6">
                     <div className="flex items-center gap-6">
                       <Label className="text-base font-semibold">Ticket Type</Label>
-                      <div className="flex items-center gap-4 bg-background/50 p-1 rounded-lg border border-border/50">
-                        <label className={`cursor-pointer px-4 py-1.5 rounded-md transition-all ${ticketType === 'free' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}>
-                          <input type="radio" value="free" {...register("ticketType")} className="hidden" />
+                      <div className="flex items-center gap-1 bg-black/40 p-1 rounded-lg border border-white/10">
+                        <label className={`cursor-pointer px-6 py-2 rounded-md transition-all duration-500 ${ticketType === 'free' ? 'bg-zinc-800/80 text-white shadow-sm font-bold border border-zinc-700/50 backdrop-blur-sm' : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5'}`}>
+                          <input type="radio" value="free" {...register("ticketType")} className="sr-only" />
                           Free
                         </label>
-                        <label className={`cursor-pointer px-4 py-1.5 rounded-md transition-all ${ticketType === 'paid' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}>
-                          <input type="radio" value="paid" {...register("ticketType")} className="hidden" />
+                        <label className={`cursor-pointer px-6 py-2 rounded-md transition-all duration-500 ${ticketType === 'paid' ? 'bg-zinc-800/80 text-white shadow-sm font-bold border border-zinc-700/50 backdrop-blur-sm' : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5'}`}>
+                          <input type="radio" value="paid" {...register("ticketType")} className="sr-only" />
                           Paid
                         </label>
                       </div>
@@ -549,6 +711,7 @@ export default function CreateEventPage() {
                           {...register("ticketPrice", { valueAsNumber: true })}
                           className="bg-background/80 h-11"
                         />
+                        {errors.ticketPrice && <p className="text-xs text-red-500 mt-1">{errors.ticketPrice.message}</p>}
                       </div>
                     )}
                   </div>
@@ -556,12 +719,17 @@ export default function CreateEventPage() {
 
               </div>
 
+
+
               {/* Submit Button */}
               <Button
                 type="submit"
                 disabled={isLoading}
                 className="w-full py-7 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all text-white hover:brightness-110"
-                style={{ backgroundColor: themeColor }}
+                style={{ 
+                  backgroundColor: themeColor,
+                  boxShadow: `0 10px 30px -10px ${themeColor}60`
+                }}
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">

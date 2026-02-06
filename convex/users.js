@@ -59,7 +59,7 @@ export const getCurrentUser = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      return null;
+      return { error: "No Identity (Convex Auth failed)" };
     }
 
     // 🔹 Lookup by tokenIdentifier
@@ -69,12 +69,7 @@ export const getCurrentUser = query({
         q.eq("tokenIdentifier", identity.tokenIdentifier)
       )
       .unique();
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    return user;
+    return user || { error: "User not found in DB", token: identity.tokenIdentifier };
   },
 });
 
@@ -113,5 +108,11 @@ export const completeOnboarding = mutation({
     });
 
     return user._id;
+  },
+});
+
+export const debugListUsers = query({
+  handler: async (ctx) => {
+    return await ctx.db.query("users").order("desc").take(5);
   },
 });
