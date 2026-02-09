@@ -19,6 +19,7 @@ import { useConvexQuery, useConvexMutation } from "@/hooks/use-convex-query";
 import { api } from "@/convex/_generated/api";
 import { createLocationSlug } from "@/lib/location-utils";
 import { getCategoryIcon } from "@/lib/data";
+import { useConvexAuth } from "convex/react";
 
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -35,9 +36,12 @@ export default function SearchLocationBar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
   const searchRef = useRef(null);
+  const { isAuthenticated } = useConvexAuth();
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   const { data: currentUser, isLoading } = useConvexQuery(
-    api.users.getCurrentUser
+    api.users.getCurrentUser,
+    isAuthenticated ? undefined : "skip" // Skip if not authenticated to avoid build errors
   );
   const { mutate: updateLocation } = useConvexMutation(
     api.users.completeOnboarding
@@ -48,17 +52,21 @@ export default function SearchLocationBar() {
     searchQuery.trim().length >= 2 ? { query: searchQuery, limit: 5 } : "skip"
   );
 
-  const indianStates = useMemo(() => State.getStatesOfCountry("IN"), []);
-
+  const [indianStates, setIndianStates] = useState([]);
+  const [cities, setCities] = useState([]);
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
+
+  useEffect(() => {
+    setIndianStates(State.getStatesOfCountry("IN"));
+  }, []);
 
   useEffect(() => {
     if (currentUser?.location) {
       setSelectedState(currentUser.location.state || "");
       setSelectedCity(currentUser.location.city || "");
     }
-  }, [currentUser, isLoading]);
+  }, [currentUser]);
 
   function debounce(func, wait) {
     let timeout;
@@ -72,11 +80,17 @@ export default function SearchLocationBar() {
     };
   }
 
-  const cities = useMemo(() => {
-    if (!selectedState) return [];
+  useEffect(() => {
+    if (!selectedState) {
+      setCities([]);
+      return;
+    }
     const state = indianStates.find((s) => s.name === selectedState);
-    if (!state) return [];
-    return City.getCitiesOfState("IN", state.isoCode);
+    if (!state) {
+      setCities([]);
+      return;
+    }
+    setCities(City.getCitiesOfState("IN", state.isoCode));
   }, [selectedState, indianStates]);
 
   const debouncedSetQuery = useRef(

@@ -61,7 +61,10 @@ const eventSchema = z.object({
   state: z.string().optional(),
   capacity: z.number().min(1, "Capacity must be at least 1"),
   ticketType: z.enum(["free", "paid"]).default("free"),
-  ticketPrice: z.number().optional(),
+  ticketPrice: z.preprocess(
+    (val) => (typeof val === "number" && isNaN(val) ? undefined : val),
+    z.number().optional()
+  ),
   coverImage: z.string().optional(),
   themeColor: z.string().default("#1e3a8a"),
 }).superRefine((data, ctx) => {
@@ -88,18 +91,19 @@ export default function CreateEventPage() {
   // Check if user has Pro plan
   const { has, isLoaded, isSignedIn } = useAuth();
   const { isAuthenticated } = useConvexAuth();
-  
+
   const hasPro = has?.({ plan: "pro" });
 
   // Redirect if not authenticated
-  if (isLoaded && !isSignedIn) {
-    router.push("/sign-in");
-    return null;
-  }
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push("/sign-in");
+    }
+  }, [isLoaded, isSignedIn, router]);
 
   const { data: currentUser } = useConvexQuery(
     api.users.getCurrentUser,
-    isSignedIn ? undefined : "skip"
+    (isLoaded && isSignedIn) ? undefined : "skip"
   );
   const { mutate: createEvent, isLoading } = useConvexMutation(
     api.events.create
@@ -134,12 +138,25 @@ export default function CreateEventPage() {
   const endDate = watch("endDate");
   const coverImage = watch("coverImage");
 
-  const indianStates = useMemo(() => State.getStatesOfCountry("IN"), []);
-  const cities = useMemo(() => {
-    if (!selectedState) return [];
+  // Load states/cities only on client to avoid build-time issues
+  const [indianStates, setIndianStates] = useState([]);
+  const [cities, setCities] = useState([]);
+
+  useEffect(() => {
+    setIndianStates(State.getStatesOfCountry("IN"));
+  }, []);
+
+  useEffect(() => {
+    if (!selectedState) {
+      setCities([]);
+      return;
+    }
     const st = indianStates.find((s) => s.name === selectedState);
-    if (!st) return [];
-    return City.getCitiesOfState("IN", st.isoCode);
+    if (!st) {
+      setCities([]);
+      return;
+    }
+    setCities(City.getCitiesOfState("IN", st.isoCode));
   }, [selectedState, indianStates]);
 
   // Color presets - show all for Pro, only default for Free
@@ -342,7 +359,7 @@ export default function CreateEventPage() {
 
   return (
     <div
-      className="min-h-screen transition-all duration-700 px-4 sm:px-6 pt-36 md:pt-24 pb-8 lg:rounded-md relative overflow-hidden"
+      className="min-h-screen transition-all duration-700 px-4 sm:px-6 pt-36 md:pt-24 pb-8 lg:rounded-md relative"
       style={{ 
         backgroundColor: "black",
         "--theme-primary": themeColor,
@@ -392,7 +409,7 @@ export default function CreateEventPage() {
         })} className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* LEFT COLUMN: Media & Theme */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24 h-fit">
               {/* Cover Image Card */}
               <div 
                 className="group relative aspect-video w-full rounded-2xl overflow-hidden border border-border/50 bg-background/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all cursor-pointer"
@@ -708,7 +725,7 @@ export default function CreateEventPage() {
                         <Input
                           type="number"
                           placeholder="Price per ticket (₹)"
-                          {...register("ticketPrice", { valueAsNumber: true })}
+                          {...register("ticketPrice", { valueAsNumber: true, shouldUnregister: true })}
                           className="bg-background/80 h-11"
                         />
                         {errors.ticketPrice && <p className="text-xs text-red-500 mt-1">{errors.ticketPrice.message}</p>}

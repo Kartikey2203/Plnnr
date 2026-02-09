@@ -49,3 +49,37 @@ export const clearAllEvents = mutation({
     return events.length;
   },
 });
+
+export const deleteEventByTitle = mutation({
+  args: {
+    title: v.string(),
+  },
+  handler: async (ctx, { title }) => {
+    const event = await ctx.db
+      .query("events")
+      .filter((q) => q.eq(q.field("title"), title))
+      .first();
+
+    if (!event) {
+      return { success: false, message: "Event not found" };
+    }
+
+    // Delete associated registrations
+    const registrations = await ctx.db
+      .query("registrations")
+      .filter((q) => q.eq(q.field("eventId"), event._id))
+      .collect();
+
+    for (const registration of registrations) {
+      await ctx.db.delete(registration._id);
+    }
+
+    // Delete the event
+    await ctx.db.delete(event._id);
+
+    return { 
+      success: true, 
+      message: `Deleted event "${title}" and ${registrations.length} associated registrations` 
+    };
+  },
+});

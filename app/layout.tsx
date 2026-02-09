@@ -4,7 +4,7 @@ import ConvexClientProvider from "./convexclientProvider";
 import Header from "@/components/header";
 import { dark } from "@clerk/themes";
 import { ClerkProvider } from "@clerk/nextjs";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { Toaster } from "sonner";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -15,7 +15,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <ThemeProvider attribute="class" defaultTheme="dark">
             <ConvexClientProvider>
               {/* HEADER */}
-              <Header />
+              <Suspense fallback={<div className="h-16 bg-black/80" />}>
+                <Header />
+              </Suspense>
 
               {/* MAIN — FIX IS HERE */}
               <main className="w-screen min-h-screen bg-black">

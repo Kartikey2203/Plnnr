@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
 
 export const create = mutation({
@@ -6,6 +7,7 @@ export const create = mutation({
     eventId: v.id("events"),
     attendeeName: v.string(),
     attendeeEmail: v.string(),
+    ticketCount: v.number(), // Validator updated
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -32,8 +34,9 @@ export const create = mutation({
     }
 
     // Check capacity
-    if (event.registrationCount >= event.capacity) {
-      throw new Error("Event is full");
+    // Check capacity
+    if (event.registrationCount + args.ticketCount > event.capacity) {
+      throw new Error(`Not enough spots available. Only ${event.capacity - event.registrationCount} left.`);
     }
 
     // Check if already registered
@@ -45,7 +48,24 @@ export const create = mutation({
       .unique();
 
     if (existingRegistration) {
-      throw new Error("You are already registered for this event");
+      if (existingRegistration.status === "cancelled") {
+        // Reactivate registration
+        await ctx.db.patch(existingRegistration._id, {
+            status: "confirmed",
+            ticketCount: args.ticketCount,
+            registeredAt: Date.now(), // update registration time if needed
+        });
+        
+        // Update event registration count
+        await ctx.db.patch(args.eventId, {
+            registrationCount: event.registrationCount + args.ticketCount,
+        });
+
+        return { registrationId: existingRegistration._id, qrCode: existingRegistration.qrCode };
+
+      } else {
+         throw new Error("You are already registered for this event");
+      }
     }
 
     // Generate unique QR Code
@@ -60,6 +80,7 @@ export const create = mutation({
       userId: user._id,
       attendeeName: args.attendeeName,
       attendeeEmail: args.attendeeEmail,
+      ticketCount: args.ticketCount,
       qrCode,
       checkedIn: false,
       status: "confirmed",
@@ -68,7 +89,7 @@ export const create = mutation({
 
     // Update event registration count
     await ctx.db.patch(args.eventId, {
-      registrationCount: event.registrationCount + 1,
+      registrationCount: event.registrationCount + args.ticketCount,
     });
 
     return { registrationId, qrCode };
@@ -207,11 +228,100 @@ export const cancelRegistration = mutation({
         const event = await ctx.db.get(registration.eventId);
         if (event) {
             await ctx.db.patch(registration.eventId, {
-                registrationCount: event.registrationCount - 1,
+                registrationCount: event.registrationCount - registration.ticketCount,
             });
         }
 
         return { success: true };
     },
 });
+// Check-in attendee with QR code
+export const checkInAttendee = mutation({
+  args: { qrCode: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.runQuery(internal.users.getCurrentUser);
 
+    const registration = await ctx.db
+      .query("registrations")
+      .withIndex("by_qr_code", (q) => q.eq("qrCode", args.qrCode))
+      .unique();
+
+    if (!registration) {
+      throw new Error("Invalid QR code");
+    }
+
+    const event = await ctx.db.get(registration.eventId);
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    // Check if user is the organizer
+    if (event.organizerId !== user._id) {
+      throw new Error("You are not authorized to check in attendees");
+    }
+
+    // Check if already checked in
+    if (registration.checkedIn) {
+      return {
+        success: false,
+        message: "Already checked in",
+        registration,
+      };
+    }
+
+    // Check in
+    await ctx.db.patch(registration._id, {
+      checkedIn: true,
+      checkedInAt: Date.now(),
+    });
+
+    return {
+      success: true,
+      message: "Check-in successful",
+      registration: {
+        ...registration,
+        checkedIn: true,
+        checkedInAt: Date.now(),
+      },
+    };
+  },
+});
+
+export const getEventRegistrations = query({
+  args: { eventId: v.id("events") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      return [];
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier)
+      )
+      .unique();
+
+    if (!user) {
+      return [];
+    }
+
+    const event = await ctx.db.get(args.eventId);
+
+    if (!event) {
+      return [];
+    }
+
+    if (event.organizerId !== user._id) {
+      return [];
+    }
+
+    const registrations = await ctx.db
+      .query("registrations")
+      .withIndex("by_event", (q) => q.eq("eventId", args.eventId))
+      .collect();
+
+    return registrations;
+  },
+});

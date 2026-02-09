@@ -143,11 +143,12 @@ export default function EventCard({
     );
   }
   return (
+
     <Card
-      className={`overflow-hidden group border border-white/10 bg-white/5 hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] transition-all duration-300 ${className}`}
+      className={`overflow-hidden group border border-white/10 bg-white/5 hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] transition-all duration-300 h-full flex flex-col ${className}`}
       onClick={onClick}
     >
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-48 overflow-hidden shrink-0">
         {event.coverImage ? (
           <Image
             src={event.coverImage}
@@ -173,39 +174,41 @@ export default function EventCard({
       </div>
 
       {/* Default Grid Content */}
-      <CardContent className="p-4 space-y-3">
-        <div>
-          <Badge variant="secondary" className="mb-2 bg-purple-500/10 text-purple-400 border-purple-500/20 hover:bg-purple-500/20 text-[10px] px-2 py-0 h-5">
-            {getCategoryIcon(event.category)} <span className="ml-1">{getCategoryLabel(event.category)}</span>
-          </Badge>
-          <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-purple-400 transition-colors text-white">
-            {event.title}
-          </h3>
-        </div>
+      <CardContent className="p-4 flex-1 flex flex-col">
+        <div className="flex-1 space-y-3">
+          <div>
+            <Badge variant="secondary" className="mb-2 bg-purple-500/10 text-purple-400 border-purple-500/20 hover:bg-purple-500/20 text-[10px] px-2 py-0 h-5">
+              {getCategoryIcon(event.category)} <span className="ml-1">{getCategoryLabel(event.category)}</span>
+            </Badge>
+            <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-purple-400 transition-colors text-white">
+              {event.title}
+            </h3>
+          </div>
 
-        <div className="space-y-1.5 text-xs text-gray-400">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-3.5 h-3.5 text-gray-500" />
-            <span>{format(event.startDate, "MMM d, yyyy")}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <MapPin className="w-3.5 h-3.5 text-gray-500" />
-            <span className="line-clamp-1">
-              {event.locationType === "online"
-                ? "Online Event"
-                : `${event.city}, ${event.state || event.country}`}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Users className="w-3.5 h-3.5 text-gray-500" />
-            <span>
-              {event.registrationCount} / {event.capacity} registered
-            </span>
+          <div className="space-y-1.5 text-xs text-gray-400">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5 text-gray-500" />
+              <span>{format(event.startDate, "MMM d, yyyy")}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-3.5 h-3.5 text-gray-500" />
+              <span className="line-clamp-1">
+                {event.locationType === "online"
+                  ? "Online Event"
+                  : `${event.city}, ${event.state || event.country}`}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="w-3.5 h-3.5 text-gray-500" />
+              <span>
+                {event.registrationCount} / {event.capacity} registered
+              </span>
+            </div>
           </div>
         </div>
 
         {action && (
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-4 mt-auto">
             {/* Primary button */}
             <Button
               className="flex-1 bg-white/5 border border-white/10 hover:bg-white/10 text-white hover:border-purple-500/50"

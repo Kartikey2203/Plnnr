@@ -137,7 +137,7 @@ const EventPage = () => {
                </div>
                {/* Hero image */}
                {event.coverImage && (
-                <div className="relative w-full h-[50px] md:h-[100px] rounded-2xl overflow-hidden mb-6 shadow-xl border border-white/10">
+                <div className="relative w-full h-[300px] md:h-[400px] rounded-2xl overflow-hidden mb-6 shadow-xl border border-white/10">
                     <img 
                         src={event.coverImage}
                         alt={event.title}
@@ -228,7 +228,7 @@ const EventPage = () => {
 
 
     {/* Sidebar - Registration Card */}
-          <div className="lg:sticky lg:top-24 h-fit">
+          <div className="lg:sticky lg:top-24 h-fit self-start">
             <div
               className="bg-black/20 rounded-xl p-6 md:p-8 backdrop-blur-sm space-y-6 border border-white/10"
             >
@@ -284,7 +284,7 @@ const EventPage = () => {
 
                 <div className="space-y-3 pt-4">
                 {/* Registration Button */}
-                {registration ? (
+                {registration && registration.status === 'confirmed' ? (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-green-400 bg-green-400/10 p-3 rounded-lg border border-green-400/20">
                       <CheckCircle className="w-5 h-5" />
@@ -319,7 +319,7 @@ const EventPage = () => {
                       backgroundColor: event.themeColor || "#4c1d95",
                       color: "white"
                     }}
-                    onClick={() => router.push(`/events/${event.slug}/manage`)}
+                    onClick={() => router.push(`/my-events/${event._id}`)}
                   >
                     Manage Event
                   </Button>

@@ -50,7 +50,7 @@ export default function MyEventsPage() {
   };
 
   const handleCardClick = (eventId) => {
-    router.push(`/events/${eventId}`);
+    router.push(`/my-events/${eventId}`);
   };
 
   return (

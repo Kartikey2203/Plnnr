@@ -188,6 +188,53 @@ export const deleteEvent = mutation({
       });
     }
 
+
+    return { success: true };
+  },
+});
+
+// Update an event
+export const updateEvent = mutation({
+  args: {
+    eventId: v.id("events"),
+    coverImage: v.optional(v.string()),
+    themeColor: v.optional(v.string()),
+    startDate: v.optional(v.number()), // Add date field
+    capacity: v.optional(v.number()),  // Add capacity field
+    // Add other updateable fields as needed
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier)
+      )
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const event = await ctx.db.get(args.eventId);
+
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    if (event.organizerId !== user._id) {
+      throw new Error("Unauthorized to update this event");
+    }
+
+    const { eventId, ...updates } = args;
+
+    await ctx.db.patch(eventId, updates);
+
     return { success: true };
   },
 });

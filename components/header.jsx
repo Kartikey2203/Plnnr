@@ -2,7 +2,7 @@
 
 import { SignInButton, UserButton, useAuth } from "@clerk/nextjs";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { BarLoader } from "react-spinners";
 import useStoreUser from "@/hooks/useStoreUser";
@@ -23,9 +23,15 @@ const Header = () => {
   const pathname = usePathname();
   const isLandingPage = pathname === "/" || pathname === "/explore";
   const {has} = useAuth();
-  const hasPro = has?.({
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const hasPro = mounted && has?.({
     plan: "pro"
-  })
+  });
   return (
     <>
     <nav className="fixed top-0 left-0 right-0 z-50">
@@ -52,11 +58,8 @@ const Header = () => {
             
             {/* Pro Icon */}
             {hasPro && (
-              <Link href="/pro">
-                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 gap-1.5 text-white hover:from-purple-400 hover:to-pink-400 transition-all duration-300 cursor-pointer px-2 py-0.5 h-6 border-white/10 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_20px_rgba(168,85,247,0.6)]">
-                  <ProLogo className="w-3.5 h-3.5 text-white drop-shadow-md" />
-                  <span className="font-bold tracking-wider text-[10px] uppercase text-white/90">Pro</span>
-                </Badge>
+              <Link href="/" className="transition-opacity hover:opacity-90">
+                <ProLogo className="h-7 w-auto" />
               </Link>
             )}
           </div>

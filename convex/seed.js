@@ -772,7 +772,7 @@ A truly unforgettable night under the desert sky.`,
     capacity: 25,
     ticketType: "paid",
     ticketPrice: 3000,
-    coverImage: "https://images.unsplash.com/photo-1534274988754-c6a60d2968dc?w=1200&q=80",
+    coverImage: "/images/desert_stargazing.png",
     themeColor: "#312e81",
   },
   {

@@ -58,9 +58,15 @@ export default function MyTicketsPage() {
     (reg) =>
       reg.event && reg.event.startDate >= now && reg.status === "confirmed"
   );
+  
+  const cancelledTickets = registrations?.filter(
+    (reg) =>
+      reg.event && reg.event.startDate >= now && reg.status === "cancelled"
+  );
+
   const pastTickets = registrations?.filter(
     (reg) =>
-      reg.event && (reg.event.startDate < now || reg.status === "cancelled")
+      reg.event && reg.event.startDate < now
   );
 
   return (
@@ -92,6 +98,25 @@ export default function MyTicketsPage() {
           </div>
         )}
 
+        {/* Cancelled Tickets */}
+        {cancelledTickets?.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-4">Cancelled Events</h2>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {cancelledTickets.map((registration) => (
+                <EventCard
+                  key={registration._id}
+                  event={registration.event}
+                  action="event"
+                  onClick={() => router.push(`/events/${registration.event.slug}`)}
+                  className="opacity-75 grayscale hover:grayscale-0 transition-all"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Past Tickets */}
         {pastTickets?.length > 0 && (
           <div>
@@ -111,7 +136,7 @@ export default function MyTicketsPage() {
         )}
 
         {/* Empty State */}
-        {!upcomingTickets?.length && !pastTickets?.length && (
+        {!upcomingTickets?.length && !pastTickets?.length && !cancelledTickets?.length && (
           <Card className="p-12 text-center">
             <div className="max-w-md mx-auto space-y-4">
               <div className="text-6xl mb-4">🎟️</div>
@@ -154,9 +179,19 @@ export default function MyTicketsPage() {
                 <QRCode value={selectedTicket.qrCode} size={200} level="H" />
               </div>
 
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground mb-1">Ticket ID</p>
-                <p className="font-mono text-sm">{selectedTicket.qrCode}</p>
+              <div className="grid grid-cols-2 gap-4 px-4 text-center">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Ticket ID</p>
+                  <p className="font-mono text-sm truncate" title={selectedTicket.qrCode}>
+                    {selectedTicket.qrCode}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">No. of People</p>
+                  <p className="font-mono text-sm font-bold">
+                    {selectedTicket.ticketCount || 1}
+                  </p>
+                </div>
               </div>
 
               <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">

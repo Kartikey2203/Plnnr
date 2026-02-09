@@ -27,6 +27,7 @@ export default function RegisterModal({ event, isOpen, onClose }) {
   const [formData, setFormData] = useState({
     name: user?.fullName || "",
     email: user?.primaryEmailAddress?.emailAddress || "",
+    ticketCount: 1,
   });
 
   const handleSubmit = async (e) => {
@@ -37,6 +38,7 @@ export default function RegisterModal({ event, isOpen, onClose }) {
         eventId: event._id,
         attendeeName: formData.name,
         attendeeEmail: formData.email,
+        ticketCount: formData.ticketCount,
       });
       toast.success("Successfully registered!");
       onClose();
@@ -76,6 +78,19 @@ export default function RegisterModal({ event, isOpen, onClose }) {
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+              disabled={isLoading}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="tickets">Number of Tickets</Label>
+            <Input
+              id="tickets"
+              type="number"
+              min="1"
+              max={event.capacity - event.registrationCount}
+              value={formData.ticketCount}
+              onChange={(e) => setFormData({ ...formData, ticketCount: parseInt(e.target.value) || 1 })}
               required
               disabled={isLoading}
             />
